@@ -1,0 +1,129 @@
+---
+// Lightbox component - wraps images in a clickable lightbox
+---
+
+<dialog id="lightbox-dialog">
+  <button id="lightbox-close" aria-label="Close">&times;</button>
+  <button id="lightbox-prev" aria-label="Previous">&larr;</button>
+  <img id="lightbox-image" src="" alt="" />
+  <button id="lightbox-next" aria-label="Next">&rarr;</button>
+</dialog>
+
+<script>
+  const dialog = document.getElementById('lightbox-dialog') as HTMLDialogElement;
+  const img = document.getElementById('lightbox-image') as HTMLImageElement;
+  const closeBtn = document.getElementById('lightbox-close');
+  const prevBtn = document.getElementById('lightbox-prev');
+  const nextBtn = document.getElementById('lightbox-next');
+
+  let currentGroup: HTMLAnchorElement[] = [];
+  let currentIndex = 0;
+
+  function openLightbox(anchor: HTMLAnchorElement) {
+    const group = anchor.dataset.lightboxGroup;
+    if (group) {
+      currentGroup = Array.from(document.querySelectorAll(`a[data-lightbox-group="${group}"]`));
+      currentIndex = currentGroup.indexOf(anchor);
+    } else {
+      currentGroup = [anchor];
+      currentIndex = 0;
+    }
+    showImage(currentIndex);
+    dialog.showModal();
+  }
+
+  function showImage(index: number) {
+    if (index < 0) index = currentGroup.length - 1;
+    if (index >= currentGroup.length) index = 0;
+    currentIndex = index;
+
+    const anchor = currentGroup[currentIndex];
+    img.src = anchor.href;
+    img.alt = anchor.title || '';
+
+    prevBtn!.style.display = currentGroup.length > 1 ? 'block' : 'none';
+    nextBtn!.style.display = currentGroup.length > 1 ? 'block' : 'none';
+  }
+
+  // Set up click handlers for all lightbox links
+  document.querySelectorAll('a[data-lightbox]').forEach(anchor => {
+    anchor.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLightbox(anchor as HTMLAnchorElement);
+    });
+  });
+
+  closeBtn?.addEventListener('click', () => dialog.close());
+  prevBtn?.addEventListener('click', () => showImage(currentIndex - 1));
+  nextBtn?.addEventListener('click', () => showImage(currentIndex + 1));
+
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!dialog.open) return;
+    if (e.key === 'Escape') dialog.close();
+    if (e.key === 'ArrowLeft') showImage(currentIndex - 1);
+    if (e.key === 'ArrowRight') showImage(currentIndex + 1);
+  });
+</script>
+
+<style>
+  #lightbox-dialog {
+    border: none;
+    background: transparent;
+    padding: 0;
+    max-width: 90vw;
+    max-height: 90vh;
+  }
+
+  #lightbox-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.85);
+  }
+
+  #lightbox-image {
+    max-width: 90vw;
+    max-height: 85vh;
+    display: block;
+  }
+
+  #lightbox-close {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 40px;
+    cursor: pointer;
+    z-index: 1001;
+  }
+
+  #lightbox-prev,
+  #lightbox-next {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 30px;
+    padding: 20px 15px;
+    cursor: pointer;
+    z-index: 1001;
+  }
+
+  #lightbox-prev {
+    left: 10px;
+  }
+
+  #lightbox-next {
+    right: 10px;
+  }
+
+  #lightbox-prev:hover,
+  #lightbox-next:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+</style>

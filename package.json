@@ -1,0 +1,17 @@
+{
+  "name": "jimnist-websites",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:jimnist": "bun run --cwd apps/jimnist-com dev",
+    "dev:loco8": "bun run --cwd apps/loco8 dev",
+    "dev:engine-earring": "bun run --cwd apps/engine-earring dev",
+    "build:jimnist": "bun run --cwd apps/jimnist-com build",
+    "build:loco8": "bun run --cwd apps/loco8 build",
+    "build:engine-earring": "bun run --cwd apps/engine-earring build",
+    "build:all": "bun run build:jimnist && bun run build:loco8 && bun run build:engine-earring"
+  }
+}

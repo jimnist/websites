@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit",
+      "MultiEdit",
+      "Bash(wc:*)",
+      "Bash(npm run *)",
+      "Bash(git status)",
+      "Bash(git diff)",
+      "Bash(npm create:*)",
+      "Bash(pkill:*)",
+      "Bash(bun --version:*)",
+      "Bash(bun install)",
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nMigrate Jekyll site to Astro with SVG smiley and basic auth\n\n- Convert Protovis-based pixel art to pure SVG with CSS\n- Add mouse-tracking eyes using vanilla JavaScript\n- Set up Cloudflare Pages middleware for basic auth on /2bwed/ and /photos/\n- Create responsive layout with vmin units\n- Only draw borders between different-colored pixels\n- Switch to bun package manager\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd darker outer edge borders to smiley\n\n- Interior pixel borders use #d4d4d4\n- Outer edge borders use #bfbfbf \\(10% darker\\)\n- Explicitly draw borders as lines for precise control\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

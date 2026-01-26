@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PhotoGallery from '../../../components/PhotoGallery.astro';
+import { galleries } from '../../../data/galleries';
+
+export function getStaticPaths() {
+  return galleries.map(gallery => ({
+    params: { gallery: gallery.id },
+    props: { gallery }
+  }));
+}
+
+const { gallery } = Astro.props;
+---
+
+<BaseLayout title={gallery.title}>
+  <PhotoGallery galleryId={gallery.id} images={gallery.images} />
+</BaseLayout>
+
+<style>
+  :global(body) {
+    background-color: #D8D8D8;
+  }
+</style>

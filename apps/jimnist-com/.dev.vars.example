@@ -1,0 +1,5 @@
+# Copy this file to .dev.vars for local development
+# These are used by Cloudflare Pages Functions
+
+BASIC_AUTH_USER=your_username
+BASIC_AUTH_PASS=your_password

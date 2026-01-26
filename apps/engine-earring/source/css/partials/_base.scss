@@ -1,0 +1,56 @@
+// this will (can) get included everywhere
+//
+// our own variable for showing grids etc //
+$blueprint_debugging: false;
+
+// another one for media (320andup stuff) debuging //
+$media_debugging: false;
+
+$brdr-radius: 9px;
+$brdr-width: 1px;
+$brdr-color: #949494;
+
+// colors  //
+$lemon: rgba(255, 255, 204, 0.5);
+$limon: rgba(102, 255, 51, 0.25);
+$orangina: rgba(255, 153, 51, 0.25);
+
+$bg : #fff;
+// $bg: #cec3cb;
+// $bg : #dadada;
+$boxbkg : #ffffe5;
+// $boxbkg : #f0f0f0;
+
+@mixin content-column($columns, $padding, $border_width: 0) {
+  @include column-base(true);
+  width: span($columns) - (2 * ($padding + $border_width));
+  padding-left: $padding;
+  padding-right: $padding; }
+
+// common things we do with the media partials
+@mixin set_media_options($width-string) {
+
+  // blueprint variables will be set in the media partials
+  $blueprint-grid-width: ($blueprint-container-size + $blueprint-grid-margin) /
+                          $blueprint-grid-columns - $blueprint-grid-margin;
+
+  $blueprint-grid-outer-width: $blueprint-grid-width + $blueprint-grid-margin;
+
+	header, div[role="main"], footer { @include container; }
+
+	div[role="main"] {
+		@if $blueprint_debugging { @include showgrid; } }
+
+  @include _show_media_width_div($width-string);
+}
+
+// debugging display to show what media we are on
+@mixin _show_media_width_div($width-string) {
+
+  #media-320, #media-600 { display: none; }
+
+  @if $media_debugging {
+    // overrides display:none from above for just this one
+    #media-#{$width-string} {
+      @include container;
+      display: block; } } }

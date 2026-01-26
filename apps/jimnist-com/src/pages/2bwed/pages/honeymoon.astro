@@ -1,0 +1,82 @@
+---
+import WeddingLayout from '../../../layouts/WeddingLayout.astro';
+import Lightbox from '../../../components/Lightbox.astro';
+
+const homePhotos = [
+  { file: 'IMG_1286', title: 'the happy couple' },
+  { file: 'IMG_1278', title: 'honeymoon view #1' },
+  { file: 'IMG_1298', title: 'honeymoon view #2' },
+  { file: 'pan01', title: 'the view from the deck' },
+  { file: 'DSC02243', title: 'honeymoon view #3' },
+];
+
+const thomasPhotos = [
+  { file: 'DSC02215', title: "Magen's Bay Beach" },
+  { file: 'DSC02216', title: 'Udder Delight, a milkshake a day...' },
+  { file: 'IMG_1293', title: 'Charlotte Amalie' },
+];
+
+const johnPhotos = [
+  { file: 'pan02', title: 'Nest Bay' },
+  { file: 'DSC02231', title: 'Jim and Kelly, the wild donkeys' },
+  { file: 'DSC02242', title: 'Skinny Legs' },
+];
+---
+
+<WeddingLayout activeTab="honeymoon" contentHeight="514px">
+  <div id="PageContentLeft">
+    <h4>Secret Honeymoon Hideaway</h4>
+    <p>
+      {homePhotos.map(photo => (
+        <a href={`/2bwed/images/photos/honeymoon/${photo.file}.jpg`} data-lightbox data-lightbox-group="honeymoon" title={photo.title}>
+          <img alt={photo.file} class="photo" src={`/2bwed/images/photos/honeymoon/${photo.file}_sm.jpg`} />
+        </a>
+      ))}
+    </p>
+
+    <h4>St. Thomas</h4>
+    <p>
+      {thomasPhotos.map(photo => (
+        <a href={`/2bwed/images/photos/honeymoon/${photo.file}.jpg`} data-lightbox data-lightbox-group="honeymoon" title={photo.title}>
+          <img alt={photo.file} class="photo" src={`/2bwed/images/photos/honeymoon/${photo.file}_sm.jpg`} />
+        </a>
+      ))}
+    </p>
+
+    <h4>St. John</h4>
+    <p>
+      {johnPhotos.map(photo => (
+        <a href={`/2bwed/images/photos/honeymoon/${photo.file}.jpg`} data-lightbox data-lightbox-group="honeymoon" title={photo.title}>
+          <img alt={photo.file} class="photo" src={`/2bwed/images/photos/honeymoon/${photo.file}_sm.jpg`} />
+        </a>
+      ))}
+    </p>
+  </div>
+
+  <div id="PageContentRight">
+    <div class="sidebar">
+      <img alt="Exclaim" class="sidebarIcon" src="/2bwed/images/exclaim.png" />
+      <strong>The Virgin Islands</strong><br/>
+      Are for lovers too.
+    </div>
+    <div class="sidebar">
+      <img alt="cats" height="171" src="/2bwed/images/photos/honeymoon/cats_sm.jpg" width="210" />
+      Felix and Oscar hypnotized their owners and got them to
+      invite us to stay at their awesome house so we could feed them.
+    </div>
+    <div class="sidebar">
+      Click on an image and a bigger one will pop up.
+      Use arrow keys or click the arrows to navigate.
+    </div>
+  </div>
+
+  <Lightbox />
+</WeddingLayout>
+
+<style>
+  h4 {
+    color: Navy;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+</style>

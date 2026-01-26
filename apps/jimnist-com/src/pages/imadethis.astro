@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="keyholder"
+  description="my best self keyholder"
+  ogTitle="keyholder"
+  ogDescription="my best self keyholder"
+  ogImage="https://jimnist.com/img/keyholder.jpg"
+>
+  <div class="keyholder">
+    <img src="/img/keyholder.jpg" alt="keyholder" />
+  </div>
+</BaseLayout>
+
+<style>
+  :global(body) {
+    background-color: #fff;
+  }
+
+  .keyholder {
+    margin-top: 55px;
+    text-align: center;
+  }
+</style>

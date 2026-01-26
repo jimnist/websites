@@ -1,0 +1,112 @@
+// main file for your site's css
+//
+@import "blueprint/grid";
+@import "blueprint/debug";
+
+@import "compass/css3";
+@import "compass/utilities";
+
+@import "partials/base";
+@import "partials/media/debugging";
+
+// blueprint default(s), that in fact, don't change
+$blueprint-grid-margin: 10px;
+
+// size the blueprint grid here for 320px view, our default
+// values calculated using http://bgg.kematzy.com/
+//
+// grid strategy is to make the columns close to the
+// same size for each grid width.
+//
+$blueprint-grid-columns: 5;
+$blueprint-container-size: 308px;
+@include set_media_options('320');
+
+body {
+  background-color: $bg;
+  padding-top: 8px; }
+
+header, div[role="main"], footer { @include container; }
+
+header {
+  background: $boxbkg;
+  background-image: url('/img/header.jpg');
+  background-repeat: no-repeat;
+  // background-position: right top;
+  height: 25px;
+  border-bottom: 0;
+  border: 0;
+  // border-right: 0;
+  text-align: center;
+  color: $brdr-color;
+  padding-top: 0;
+  // padding-bottom: 8px;
+  // img {
+  //   padding: 0;
+  //   margin: 0;
+  //   position: relative;
+  //   z-index: 900;
+  //   overflow: visible;
+  //   margin-top: -11px;
+  //   margin-left: 285px; }
+  }
+
+// p {
+//   text-align: right;
+//   font-size: 1.5em;
+//   letter-spacing: 1px; }
+
+div[role="main"] {
+  @if $blueprint_debugging { @include showgrid; }
+  background-image: url('/img/bg.jpg');
+  // background-repeat: repeat-y;
+  .mr-logoto {
+    // @include content-column(4, 11px);
+    @include column(4);
+    // @if $blueprint_debugging { background: $lemon; }
+    img { margin: 11px 0 0 79px; } }
+
+  .words {
+    @include column(5, true);
+    @if $blueprint_debugging { background: $orangina; }
+    font-size: 1em;
+    margin: 22px 0 2px 0;
+    padding: 6px 0 33px 0;
+
+    div {
+      text-align: right;
+      padding-right: 33px;
+      letter-spacing: 1px;
+      font-size: 1.8em;
+      margin-bottom: 4px; }
+
+    div.creative {
+      font-size: 1.8em;
+      margin-bottom: 12px;
+    }
+
+    div.consulting {
+      margin-top: 5px;
+      font-size: 1.2em; } }
+
+  .contacto {
+    @include column(5, true);
+    font-size: 1.2em;
+    text-align: right;
+    padding-right: 14px;
+    margin-bottom: 12px; } }
+
+
+footer {
+  // @if $blueprint_debugging { background: $orangina; }
+  background-image: url('/img/bottom.jpg');
+  background-repeat: no-repeat;
+  padding-top: 9px;
+  color: $brdr-color;
+  text-align: center; }
+
+// $blueprint-grid-columns: 10;
+// $blueprint-container-size: 608px;
+
+// only use on bigger size
+// @media only screen and (min-width: 630px)  { @import "partials/media/600"; }

@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>real de catorce retablos</title>
+</head>
+
+<script src="../picpage.js"></script>
+
+<script language="JavaScript">
+<!--
+// this function is the only thing you should have to change for a slide show
+//
+function loadPicPage() {
+
+	initializePicPage();
+	
+	// here is where the image specifics are added
+	// the html should match the first one in the list
+	loadPicPageImage("braid.jpg", "");
+	loadPicPageImage("retablo01.jpg", "");
+	loadPicPageImage("retablo02.jpg", "");
+	loadPicPageImage("retablo03.jpg", "");
+	loadPicPageImage("retablo04.jpg", "");
+	loadPicPageImage("retablo06.jpg", "");
+	loadPicPageImage("retablo07.jpg", "");
+	loadPicPageImage("retablo09.jpg", "");
+	loadPicPageImage("retablo10.jpg", "");
+	loadPicPageImage("retablo11.jpg", "");
+	loadPicPageImage("retablo14.jpg", "");
+	loadPicPageImage("retablo15.jpg", "");
+	refreshPic();
+}
+-->
+</script>
+
+<map name="navmap">
+	<area alt="go to the picture b4 this one" coords="0,0,150,48" href="javascript:prevPic();">
+	<area alt="go to photos index" coords="151,0,404,48" href="../index.html">
+	<area alt="go to the picture after this one" coords="405,0,555,48" href="javascript:nextPic();">
+</map>
+
+<body bgcolor="#D8D8D8" onload="loadPicPage();">
+
+<table width="600" border="0" cellpadding="0" align="center">  <!-- outer -->
+	<tr>
+		<td>
+			<table width="580" border="1" cellpadding="4" align="center"  bgcolor="#FFFF80"> <!-- inner top -->
+				<tr>
+					<td colspan="3" align="center"><img src="../arrows.jpg" border="0" ismap usemap="#navmap"></td>
+				</tr>
+			</table>  <!-- inner top -->
+		</td>
+
+	</tr>
+	<tr><td>
+		<table width="600" border="1" cellpadding="4" align="left">  <!-- inner middle -->
+ 			<tr><td align="center" bgcolor="#000000">
+				<img src="../blank.jpg" border="2" name="pic">
+			</td></tr>
+		</table>  <!-- inner middle -->
+	</td></tr>
+<!--	<tr><td>&nbsp;</td></tr> -->
+	<tr><td>
+		<table width="560" border="1" cellpadding="4" align="center" bgcolor="#FFFF80">  <!-- inner bottom -->
+			<tr>
+				<td align="left"><font size="2">
+					<a name="caption">caption</a>
+				</font></td>
+				<td width="50" align="center"><font size="2">
+					<a name="caption">0 of 0</a>
+				</font></td>				
+				<td width="151" align="right"><font size="2" color="#808080">
+					<a name="imgname">image name</a>
+				</font></td>
+			</tr>
+		</table>  <!-- inner bottom -->
+	</td></tr>
+</table> <!-- outer -->
+
+</body>
+
+</html>
+

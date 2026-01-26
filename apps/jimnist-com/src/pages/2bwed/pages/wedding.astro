@@ -1,0 +1,84 @@
+---
+import WeddingLayout from '../../../layouts/WeddingLayout.astro';
+import Lightbox from '../../../components/Lightbox.astro';
+
+const bradPhotos = ['brad00', 'brad02', 'brad04', 'brad05'];
+const stevePhotos = ['stevePICT2109', 'stevePICT2122', 'stevePICT2160', 'stevePICT2166'];
+const edPhotos = ['ed01', 'ed02', 'ed03'];
+const amyPhotos = ['bob01', 'amy04', 'amy02', 'amy03'];
+const antonellaPhotos = ['antonella01', 'antonella02', 'antonella03'];
+const mhPhotos = ['mh0483', 'mh0513', 'mh0514', 'mh0528', 'mh0536', 'mh0543', 'mh0572', 'mh0573', 'mh0581', 'mh0585', 'mh0589', 'mh0590'];
+---
+
+<WeddingLayout activeTab="wedding" contentHeight="1000px">
+  <div id="PageContentLeft">
+    <p>
+      {bradPhotos.map(photo => (
+        <a href={`/2bwed/images/photos/wedding/${photo}.jpg`} data-lightbox data-lightbox-group="brad">
+          <img alt={photo} class="photo" src={`/2bwed/images/photos/wedding/${photo}_sm.jpg`} />
+        </a>
+      ))}
+      <br/>Brad posted some cool pictures.
+    </p>
+
+    <p>
+      {stevePhotos.map(photo => (
+        <a href={`/2bwed/images/photos/wedding/${photo}.jpg`} data-lightbox data-lightbox-group="steve">
+          <img alt={photo} class="photo" src={`/2bwed/images/photos/wedding/${photo}_sm.jpg`} />
+        </a>
+      ))}
+      <br/>Steve posted his pictures. He claims Jim ran over his camera.
+    </p>
+
+    <p>
+      {edPhotos.map(photo => (
+        <a href={`/2bwed/images/photos/wedding/${photo}.jpg`} data-lightbox data-lightbox-group="ed">
+          <img alt={photo} class="photo" src={`/2bwed/images/photos/wedding/${photo}_sm.jpg`} />
+        </a>
+      ))}
+      <br/>Ed shared some of his excellent photos.
+    </p>
+
+    <p>
+      {amyPhotos.map(photo => (
+        <a href={`/2bwed/images/photos/wedding/${photo}.jpg`} data-lightbox data-lightbox-group="amy">
+          <img alt={photo} class="photo" src={`/2bwed/images/photos/wedding/${photo}_sm.jpg`} />
+        </a>
+      ))}
+      <br/>Pictures from Amy Nist, Noel Balthasar, &amp; Bob Brown.
+    </p>
+
+    <p>
+      {antonellaPhotos.map(photo => (
+        <a href={`/2bwed/images/photos/wedding/${photo}.jpg`} data-lightbox data-lightbox-group="antonella">
+          <img alt={photo} class="photo" src={`/2bwed/images/photos/wedding/${photo}_sm.jpg`} />
+        </a>
+      ))}
+      <br/>Antonella graciously shared her pictures.
+    </p>
+
+    <p>
+      {mhPhotos.map(photo => (
+        <a href={`/2bwed/images/photos/wedding/${photo}.jpg`} data-lightbox data-lightbox-group="mh">
+          <img alt={photo} class="photo" src={`/2bwed/images/photos/wedding/${photo}_sm.jpg`} />
+        </a>
+      ))}
+      <br/>Michael's camera took a bunch of pictures.
+    </p>
+  </div>
+
+  <div id="PageContentRight">
+    <br/>
+    <div class="sidebar" style="font-size: 1em">
+      <img alt="Dancing" height="341" src="/2bwed/images/photos/dancing.png" width="210" />
+      <p>Our wedding photographer took lots of <strong>AWESOME</strong> pictures.</p>
+    </div>
+
+    <div class="sidebar">
+      This page has a series of little slide-shows. Just click on an image
+      and a bigger one will pop up. Use arrow keys or click the arrows to navigate.
+    </div>
+  </div>
+
+  <Lightbox />
+</WeddingLayout>

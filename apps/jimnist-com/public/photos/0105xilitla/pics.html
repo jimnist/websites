@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>xilitla</title>
+</head>
+
+<script src="../picpage.js"></script>
+
+<script language="JavaScript">
+<!--
+// this function is the only thing you should have to change for a slide show
+//
+function loadPicPage() {
+
+	initializePicPage();
+
+	// here is where the image specifics are added
+	// the html should match the first one in the list
+	loadPicPageImage("arches.jpg", "");
+	loadPicPageImage("column01bot.jpg", "");
+	loadPicPageImage("column01mid.jpg", "");
+	loadPicPageImage("column01top.jpg", "");
+	loadPicPageImage("hands.jpg", "");
+	loadPicPageImage("paul.jpg", "");
+	loadPicPageImage("posas01.jpg", "");
+	loadPicPageImage("posas02.jpg", "");
+	loadPicPageImage("posas03.jpg", "");
+	loadPicPageImage("posas04.jpg", "");
+	loadPicPageImage("posas05.jpg", "");
+	loadPicPageImage("posas06.jpg", "");
+	loadPicPageImage("posas07.jpg", "");
+	refreshPic();
+}
+-->
+</script>
+
+<map name="navmap">
+	<area alt="go to the picture b4 this one" coords="0,0,150,48" href="javascript:prevPic();">
+	<area alt="go to photos index" coords="151,0,404,48" href="../index.html">
+	<area alt="go to the picture after this one" coords="405,0,555,48" href="javascript:nextPic();">
+</map>
+
+<body bgcolor="#D8D8D8" onload="loadPicPage();">
+
+<table width="600" border="0" cellpadding="0" align="center">  <!-- outer -->
+	<tr>
+		<td>
+			<table width="580" border="1" cellpadding="4" align="center"  bgcolor="#FFFF80"> <!-- inner top -->
+				<tr>
+					<td colspan="3" align="center"><img src="../arrows.jpg" border="0" ismap usemap="#navmap"></td>
+				</tr>
+			</table>  <!-- inner top -->
+		</td>
+
+	</tr>
+	<tr><td>
+		<table width="600" border="1" cellpadding="4" align="left">  <!-- inner middle -->
+ 			<tr><td align="center" bgcolor="#000000">
+				<img src="../blank.jpg" border="2" name="pic">
+			</td></tr>
+		</table>  <!-- inner middle -->
+	</td></tr>
+<!--	<tr><td>&nbsp;</td></tr> -->
+	<tr><td>
+		<table width="560" border="1" cellpadding="4" align="center" bgcolor="#FFFF80">  <!-- inner bottom -->
+			<tr>
+				<td align="left"><font size="2">
+					<a name="caption">caption</a>
+				</font></td>
+				<td width="50" align="center"><font size="2">
+					<a name="caption">0 of 0</a>
+				</font></td>
+				<td width="151" align="right"><font size="2" color="#808080">
+					<a name="imgname">image name</a>
+				</font></td>
+			</tr>
+		</table>  <!-- inner bottom -->
+	</td></tr>
+	<tr><td><br>&nbsp;&nbsp;for info on this beautiful spot in the jungle <a href="http://www.junglegossip.com/">click here</a></td></tr>
+</table> <!-- outer -->
+
+</body>
+
+</html>
+
+
+

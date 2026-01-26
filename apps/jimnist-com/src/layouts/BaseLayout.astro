@@ -1,0 +1,58 @@
+---
+interface Props {
+  title: string;
+  class?: string;
+  description?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+}
+
+const { title, class: bodyClass, description, ogTitle, ogDescription, ogImage } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {ogTitle && <meta property="og:title" content={ogTitle} />}
+    {ogDescription && <meta property="og:description" content={ogDescription} />}
+    {ogImage && <meta property="og:image" content={ogImage} />}
+  </head>
+  <body class={bodyClass}>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  html {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  body, h1, h2, h3, h4, h5, h6, article, aside, dialog, figure, footer, header, hgroup, nav, section, blockquote, q, th, td, caption, table,
+  div, span, object, iframe, p,
+  pre, a, abbr, acronym, address,
+  code, del, dfn, em, img,
+  dl, dt, dd, ol, ul, li, fieldset,
+  form, label, legend,
+  caption, tbody, tfoot, thead, tr {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-weight: inherit;
+    font-style: inherit;
+    font-size: 100%;
+    font-family: inherit;
+    vertical-align: baseline;
+  }
+
+  a img {
+    border: none;
+  }
+</style>

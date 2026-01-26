@@ -1,0 +1,224 @@
+---
+interface Props {
+  title?: string;
+  activeTab?: 'happyhome' | 'wedding' | 'honeymoon' | 'souvenirs';
+  contentHeight?: string;
+}
+
+const { title = '2bwed', activeTab, contentHeight = 'auto' } = Astro.props;
+
+const tabs = [
+  { id: 'happyhome', label: 'happy home', href: '/2bwed/', width: 80 },
+  { id: 'wedding', label: 'wedding', href: '/2bwed/pages/wedding/', width: 95 },
+  { id: 'honeymoon', label: 'honeymoon', href: '/2bwed/pages/honeymoon/', width: 121 },
+  { id: 'souvenirs', label: 'souvenirs', href: '/2bwed/pages/souvenirs/', width: 112 },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/x-icon" href="/2bwed/favicon.ico" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div id="Content">
+      <div id="TopBanner"></div>
+      <div id="Menus">
+        {tabs.map(tab => (
+          <div class={activeTab === tab.id ? 'menu1' : 'menu0'} style={`width: ${tab.width}px;`}>
+            {activeTab === tab.id ? (
+              <span class="tab-label">{tab.label}</span>
+            ) : (
+              <a href={tab.href}>{tab.label}</a>
+            )}
+          </div>
+        ))}
+      </div>
+      <div id="PageContent" style={contentHeight !== 'auto' ? `height: ${contentHeight};` : ''}>
+        <slot />
+      </div>
+      <div id="PageFooter">
+        questions? problems? <a href="mailto:2bwed@jimnist.com">email</a> us
+      </div>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  body {
+    font-family: Verdana, Arial, Sans-Serif;
+    background-color: #ccc;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  img {
+    border: 0;
+  }
+
+  a {
+    color: #00c;
+  }
+
+  h3 {
+    font-size: 1.4em;
+    line-height: 2em;
+    margin: 0;
+    padding: 0;
+    color: Navy;
+  }
+
+  h4 {
+    color: Navy;
+    margin-bottom: 2px;
+  }
+
+  #Content {
+    text-align: left;
+    margin-left: auto;
+    width: 802px;
+    margin-right: auto;
+  }
+
+  #TopBanner {
+    height: 300px;
+    width: 800px;
+    border: 1px solid #666;
+    background-image: url('/2bwed/images/va6lvrz.png');
+    background-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  #PageContent {
+    min-height: 400px;
+    height: auto;
+    width: 780px;
+    border: 1px solid black;
+    background-color: #fff;
+    position: relative;
+    z-index: 1;
+    top: -54px;
+    padding: 10px;
+    text-align: left;
+    font-size: small;
+    line-height: 1.25em;
+  }
+
+  #PageContentLeft {
+    position: absolute;
+    top: 3px;
+    left: 6px;
+    width: 525px;
+    height: auto;
+    margin: 9px 6px 6px 9px;
+  }
+
+  #PageContentRight {
+    position: absolute;
+    top: 3px;
+    left: 570px;
+    width: 210px;
+    height: auto;
+    margin: 9px 6px 6px 6px;
+  }
+
+  img.photo {
+    border: solid 1px #bbb;
+    margin: 4px;
+    margin-left: 0px;
+    padding: 3px;
+    padding-bottom: 6px;
+    cursor: pointer;
+  }
+
+  div.sidebar {
+    margin: 0px 10px 8px 0px;
+    width: 100%;
+    padding: 6px;
+    border: dashed 1px #69f;
+    position: relative;
+    font-size: 0.75em;
+    left: -14px;
+    background-color: #ff9;
+    box-sizing: border-box;
+  }
+
+  #PageFooter {
+    height: 50px;
+    width: 800px;
+    text-align: center;
+    font-size: x-small;
+    position: relative;
+    top: -53px;
+  }
+
+  #Menus {
+    margin: 0px;
+    height: 31px;
+    width: 800px;
+    position: relative;
+    z-index: 2;
+    padding: 0px;
+    top: -60px;
+  }
+
+  .menu0 {
+    height: 26px;
+    border-top: 1px solid #666;
+    border-left: 1px solid #666;
+    border-right: 1px solid #666;
+    border-bottom: 1px solid black;
+    background-color: #fff;
+    padding: 0px;
+    margin: 8px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    float: left;
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .menu1 {
+    height: 32px;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid white;
+    background-color: #fff;
+    padding: 0;
+    margin: 8px;
+    margin-bottom: 0px;
+    margin-top: 4px;
+    float: left;
+    position: relative;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .menu0 a, .menu1 a, .tab-label {
+    text-decoration: none;
+    color: #333;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .menu0 a:hover {
+    text-decoration: underline;
+  }
+
+  img.sidebarIcon {
+    float: left;
+    margin-right: 6px;
+    margin-top: 5px;
+  }
+</style>

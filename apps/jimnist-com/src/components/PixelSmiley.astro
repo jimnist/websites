@@ -1,0 +1,251 @@
+---
+import { yellows, lefts, rights } from '../data/pixels';
+
+const PIXEL_SIZE = 20;
+const GRID_SIZE = 19; // Face uses 0-18, not 0-19
+const VIEW_SIZE = PIXEL_SIZE * GRID_SIZE; // 380
+const BORDER_COLOR = '#dedede'; // Same as background
+const OUTER_EDGE_COLOR = '#dedede'; // Same as background
+
+// Eye positions in grid coordinates (shifted by 1 to match original half_pixel offset)
+const LEFT_EYE_X = 4;
+const LEFT_EYE_Y = 6;
+const RIGHT_EYE_X = 12;
+const RIGHT_EYE_Y = 6;
+
+// Build pixel set for border calculation
+const yellowSet = new Set<string>();
+yellows.forEach(p => yellowSet.add(`${p.x},${p.y}`));
+
+// Calculate borders - outer edges get darker color
+function getBorders(pixels: {x: number, y: number, c: string}[], pixelSet: Set<string>) {
+  const lines: {x1: number, y1: number, x2: number, y2: number, color: string}[] = [];
+  const drawn = new Set<string>();
+
+  pixels.forEach(p => {
+    const px = p.x * PIXEL_SIZE;
+    const py = p.y * PIXEL_SIZE;
+
+    // Top edge
+    const topKey = `h:${p.x},${p.y}`;
+    if (!drawn.has(topKey)) {
+      const hasTopNeighbor = pixelSet.has(`${p.x},${p.y - 1}`);
+      lines.push({x1: px, y1: py, x2: px + PIXEL_SIZE, y2: py, color: hasTopNeighbor ? BORDER_COLOR : OUTER_EDGE_COLOR});
+      drawn.add(topKey);
+    }
+
+    // Right edge
+    const rightKey = `v:${p.x + 1},${p.y}`;
+    if (!drawn.has(rightKey)) {
+      const hasRightNeighbor = pixelSet.has(`${p.x + 1},${p.y}`);
+      lines.push({x1: px + PIXEL_SIZE, y1: py, x2: px + PIXEL_SIZE, y2: py + PIXEL_SIZE, color: hasRightNeighbor ? BORDER_COLOR : OUTER_EDGE_COLOR});
+      drawn.add(rightKey);
+    }
+
+    // Bottom edge
+    const bottomKey = `h:${p.x},${p.y + 1}`;
+    if (!drawn.has(bottomKey)) {
+      const hasBottomNeighbor = pixelSet.has(`${p.x},${p.y + 1}`);
+      lines.push({x1: px, y1: py + PIXEL_SIZE, x2: px + PIXEL_SIZE, y2: py + PIXEL_SIZE, color: hasBottomNeighbor ? BORDER_COLOR : OUTER_EDGE_COLOR});
+      drawn.add(bottomKey);
+    }
+
+    // Left edge
+    const leftKey = `v:${p.x},${p.y}`;
+    if (!drawn.has(leftKey)) {
+      const hasLeftNeighbor = pixelSet.has(`${p.x - 1},${p.y}`);
+      lines.push({x1: px, y1: py, x2: px, y2: py + PIXEL_SIZE, color: hasLeftNeighbor ? BORDER_COLOR : OUTER_EDGE_COLOR});
+      drawn.add(leftKey);
+    }
+  });
+
+  return lines;
+}
+
+const yellowBorders = getBorders(yellows, yellowSet);
+
+// Eye borders - all outer since eyes are separate groups
+const leftSet = new Set<string>();
+lefts.forEach(p => leftSet.add(`${p.x},${p.y}`));
+const leftBorders = getBorders(lefts, leftSet);
+
+const rightSet = new Set<string>();
+rights.forEach(p => rightSet.add(`${p.x},${p.y}`));
+const rightBorders = getBorders(rights, rightSet);
+---
+
+<div class="smiley-container">
+  <svg
+    id="smiley-svg"
+    viewBox={`-1 -1 ${VIEW_SIZE + 2} ${VIEW_SIZE + 2}`}
+  >
+    <!-- Face pixels (no stroke) -->
+    {yellows.map(p => (
+      <rect
+        x={p.x * PIXEL_SIZE}
+        y={p.y * PIXEL_SIZE}
+        width={PIXEL_SIZE}
+        height={PIXEL_SIZE}
+        fill={p.c}
+      />
+    ))}
+    <!-- Face borders -->
+    {yellowBorders.map(l => (
+      <line
+        x1={l.x1}
+        y1={l.y1}
+        x2={l.x2}
+        y2={l.y2}
+        stroke={l.color}
+        stroke-width="1"
+      />
+    ))}
+
+    <!-- Left eye group -->
+    <g id="left-eye" transform={`translate(${LEFT_EYE_X * PIXEL_SIZE}, ${LEFT_EYE_Y * PIXEL_SIZE})`}>
+      {lefts.map(p => (
+        <rect
+          x={p.x * PIXEL_SIZE}
+          y={p.y * PIXEL_SIZE}
+          width={PIXEL_SIZE}
+          height={PIXEL_SIZE}
+          fill={p.c}
+        />
+      ))}
+      {leftBorders.map(l => (
+        <line
+          x1={l.x1}
+          y1={l.y1}
+          x2={l.x2}
+          y2={l.y2}
+          stroke={l.color}
+          stroke-width="1"
+        />
+      ))}
+      <rect
+        id="left-pupil"
+        class="pupil"
+        x={PIXEL_SIZE * 0.75}
+        y={PIXEL_SIZE * 0.75}
+        width={PIXEL_SIZE * 1.5}
+        height={PIXEL_SIZE * 1.5}
+        fill="#111111"
+      />
+    </g>
+
+    <!-- Right eye group -->
+    <g id="right-eye" transform={`translate(${RIGHT_EYE_X * PIXEL_SIZE}, ${RIGHT_EYE_Y * PIXEL_SIZE})`}>
+      {rights.map(p => (
+        <rect
+          x={p.x * PIXEL_SIZE}
+          y={p.y * PIXEL_SIZE}
+          width={PIXEL_SIZE}
+          height={PIXEL_SIZE}
+          fill={p.c}
+        />
+      ))}
+      {rightBorders.map(l => (
+        <line
+          x1={l.x1}
+          y1={l.y1}
+          x2={l.x2}
+          y2={l.y2}
+          stroke={l.color}
+          stroke-width="1"
+        />
+      ))}
+      <rect
+        id="right-pupil"
+        class="pupil"
+        x={PIXEL_SIZE * 0.75}
+        y={PIXEL_SIZE * 0.75}
+        width={PIXEL_SIZE * 1.5}
+        height={PIXEL_SIZE * 1.5}
+        fill="#222222"
+      />
+    </g>
+
+    <!-- Logo image -->
+    <image href="/img/big_jim.png" x="87" y="240" width="205" height="55" />
+  </svg>
+</div>
+
+<script>
+  const PIXEL_SIZE = 20;
+  const EYE_SIZE = PIXEL_SIZE * 3; // 60px - the 3x3 eye grid
+  const PUPIL_SIZE = PIXEL_SIZE * 1.5; // 30px pupil (1.5x like original)
+  const PUPIL_BASE = PIXEL_SIZE * 0.75; // 15px - centered position
+
+  // Max offset: pupil can move from 0 to (EYE_SIZE - PUPIL_SIZE) = 30
+  // Base position is 15, so max offset is 15 in any direction
+  const MAX_OFFSET = PIXEL_SIZE * 0.75; // 15px - keeps pupil inside eye
+
+  function updatePupils(mouseX: number, mouseY: number) {
+    const svg = document.getElementById('smiley-svg');
+    if (!svg) return;
+
+    const svgRect = svg.getBoundingClientRect();
+    const scale = svgRect.width / 380;
+
+    ['left', 'right'].forEach(side => {
+      const eye = document.getElementById(`${side}-eye`);
+      const pupil = document.getElementById(`${side}-pupil`);
+      if (!eye || !pupil) return;
+
+      // Get eye position from transform
+      const eyeTransform = eye.getAttribute('transform');
+      const match = eyeTransform?.match(/translate\((\d+),\s*(\d+)\)/);
+      if (!match) return;
+
+      const eyeX = parseInt(match[1]);
+      const eyeY = parseInt(match[2]);
+
+      // Calculate eye center in page coordinates (center of 3x3 grid)
+      const eyeCenterX = svgRect.left + (eyeX + EYE_SIZE / 2) * scale;
+      const eyeCenterY = svgRect.top + (eyeY + EYE_SIZE / 2) * scale;
+
+      // Calculate direction to mouse
+      const dx = mouseX - eyeCenterX;
+      const dy = mouseY - eyeCenterY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // Normalize and constrain movement
+      let offsetX = 0;
+      let offsetY = 0;
+      if (distance > 0) {
+        // Scale the offset based on distance, but cap at MAX_OFFSET
+        const scaledOffset = Math.min(MAX_OFFSET, distance / scale);
+        offsetX = (dx / distance) * scaledOffset;
+        offsetY = (dy / distance) * scaledOffset;
+      }
+
+      // Position pupil - base position centers the 30px pupil in 60px eye
+      const pupilX = PUPIL_BASE + offsetX;
+      const pupilY = PUPIL_BASE + offsetY;
+      pupil.setAttribute('x', pupilX.toString());
+      pupil.setAttribute('y', pupilY.toString());
+    });
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    updatePupils(e.clientX, e.clientY);
+  });
+</script>
+
+<style>
+  .smiley-container {
+    width: 90vmin;
+    max-width: 500px;
+    margin: 5vmin auto 0;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .pupil {
+    pointer-events: none;
+  }
+</style>

@@ -1,0 +1,180 @@
+---
+import { yellows, lefts, rights } from '../data/pixels';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+
+const PIXEL_SIZE = 20;
+const GRID_SIZE = 19;
+const VIEW_SIZE = PIXEL_SIZE * GRID_SIZE;
+const BORDER_COLOR = '#dedede';
+const OUTER_EDGE_COLOR = '#dedede';
+
+const LEFT_EYE_X = 4;
+const LEFT_EYE_Y = 6;
+const RIGHT_EYE_X = 12;
+const RIGHT_EYE_Y = 6;
+
+const yellowSet = new Set<string>();
+yellows.forEach(p => yellowSet.add(`${p.x},${p.y}`));
+
+function getBorders(pixels: {x: number, y: number, c: string}[], pixelSet: Set<string>) {
+  const lines: {x1: number, y1: number, x2: number, y2: number, color: string}[] = [];
+  const drawn = new Set<string>();
+
+  pixels.forEach(p => {
+    const px = p.x * PIXEL_SIZE;
+    const py = p.y * PIXEL_SIZE;
+
+    const topKey = `h:${p.x},${p.y}`;
+    if (!drawn.has(topKey)) {
+      const hasTopNeighbor = pixelSet.has(`${p.x},${p.y - 1}`);
+      lines.push({x1: px, y1: py, x2: px + PIXEL_SIZE, y2: py, color: hasTopNeighbor ? BORDER_COLOR : OUTER_EDGE_COLOR});
+      drawn.add(topKey);
+    }
+
+    const rightKey = `v:${p.x + 1},${p.y}`;
+    if (!drawn.has(rightKey)) {
+      const hasRightNeighbor = pixelSet.has(`${p.x + 1},${p.y}`);
+      lines.push({x1: px + PIXEL_SIZE, y1: py, x2: px + PIXEL_SIZE, y2: py + PIXEL_SIZE, color: hasRightNeighbor ? BORDER_COLOR : OUTER_EDGE_COLOR});
+      drawn.add(rightKey);
+    }
+
+    const bottomKey = `h:${p.x},${p.y + 1}`;
+    if (!drawn.has(bottomKey)) {
+      const hasBottomNeighbor = pixelSet.has(`${p.x},${p.y + 1}`);
+      lines.push({x1: px, y1: py + PIXEL_SIZE, x2: px + PIXEL_SIZE, y2: py + PIXEL_SIZE, color: hasBottomNeighbor ? BORDER_COLOR : OUTER_EDGE_COLOR});
+      drawn.add(bottomKey);
+    }
+
+    const leftKey = `v:${p.x},${p.y}`;
+    if (!drawn.has(leftKey)) {
+      const hasLeftNeighbor = pixelSet.has(`${p.x - 1},${p.y}`);
+      lines.push({x1: px, y1: py, x2: px, y2: py + PIXEL_SIZE, color: hasLeftNeighbor ? BORDER_COLOR : OUTER_EDGE_COLOR});
+      drawn.add(leftKey);
+    }
+  });
+
+  return lines;
+}
+
+const yellowBorders = getBorders(yellows, yellowSet);
+
+const leftSet = new Set<string>();
+lefts.forEach(p => leftSet.add(`${p.x},${p.y}`));
+const leftBorders = getBorders(lefts, leftSet);
+
+const rightSet = new Set<string>();
+rights.forEach(p => rightSet.add(`${p.x},${p.y}`));
+const rightBorders = getBorders(rights, rightSet);
+---
+
+<div class="smiley-container">
+  <svg
+    class="smiley-svg"
+    data-smiley-id={id}
+    viewBox={`-1 -1 ${VIEW_SIZE + 2} ${VIEW_SIZE + 2}`}
+  >
+    {yellows.map(p => (
+      <rect
+        x={p.x * PIXEL_SIZE}
+        y={p.y * PIXEL_SIZE}
+        width={PIXEL_SIZE}
+        height={PIXEL_SIZE}
+        fill={p.c}
+      />
+    ))}
+    {yellowBorders.map(l => (
+      <line
+        x1={l.x1}
+        y1={l.y1}
+        x2={l.x2}
+        y2={l.y2}
+        stroke={l.color}
+        stroke-width="1"
+      />
+    ))}
+
+    <g class="left-eye" data-eye-id={`${id}-left`} transform={`translate(${LEFT_EYE_X * PIXEL_SIZE}, ${LEFT_EYE_Y * PIXEL_SIZE})`}>
+      {lefts.map(p => (
+        <rect
+          x={p.x * PIXEL_SIZE}
+          y={p.y * PIXEL_SIZE}
+          width={PIXEL_SIZE}
+          height={PIXEL_SIZE}
+          fill={p.c}
+        />
+      ))}
+      {leftBorders.map(l => (
+        <line
+          x1={l.x1}
+          y1={l.y1}
+          x2={l.x2}
+          y2={l.y2}
+          stroke={l.color}
+          stroke-width="1"
+        />
+      ))}
+      <rect
+        class="pupil"
+        data-pupil-id={`${id}-left`}
+        x={PIXEL_SIZE * 0.75}
+        y={PIXEL_SIZE * 0.75}
+        width={PIXEL_SIZE * 1.5}
+        height={PIXEL_SIZE * 1.5}
+        fill="#111111"
+      />
+    </g>
+
+    <g class="right-eye" data-eye-id={`${id}-right`} transform={`translate(${RIGHT_EYE_X * PIXEL_SIZE}, ${RIGHT_EYE_Y * PIXEL_SIZE})`}>
+      {rights.map(p => (
+        <rect
+          x={p.x * PIXEL_SIZE}
+          y={p.y * PIXEL_SIZE}
+          width={PIXEL_SIZE}
+          height={PIXEL_SIZE}
+          fill={p.c}
+        />
+      ))}
+      {rightBorders.map(l => (
+        <line
+          x1={l.x1}
+          y1={l.y1}
+          x2={l.x2}
+          y2={l.y2}
+          stroke={l.color}
+          stroke-width="1"
+        />
+      ))}
+      <rect
+        class="pupil"
+        data-pupil-id={`${id}-right`}
+        x={PIXEL_SIZE * 0.75}
+        y={PIXEL_SIZE * 0.75}
+        width={PIXEL_SIZE * 1.5}
+        height={PIXEL_SIZE * 1.5}
+        fill="#222222"
+      />
+    </g>
+  </svg>
+</div>
+
+<style>
+  .smiley-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .pupil {
+    pointer-events: none;
+  }
+</style>
