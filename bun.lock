@@ -5,6 +5,13 @@
     "": {
       "name": "jimnist-monorepo",
     },
+    "apps/engine-earring": {
+      "name": "@jimnist/engine-earring",
+      "version": "0.0.1",
+      "dependencies": {
+        "astro": "^5.16.15",
+      },
+    },
     "apps/jimnist-com": {
       "name": "@jimnist/jimnist-com",
       "version": "0.0.1",
@@ -158,6 +165,8 @@
     "@img/sharp-win32-x64": ["@img/sharp-win32-x64@0.34.5", "", { "os": "win32", "cpu": "x64" }, "sha512-+29YMsqY2/9eFEiW93eqWnuLcWcufowXewwSNIT6UwZdUUCrM3oFjMWH/Z6/TMmb4hlFenmfAVbpWeup2jryCw=="],
 
     "@jimnist/components": ["@jimnist/components@workspace:packages/components"],
+
+    "@jimnist/engine-earring": ["@jimnist/engine-earring@workspace:apps/engine-earring"],
 
     "@jimnist/jimnist-com": ["@jimnist/jimnist-com@workspace:apps/jimnist-com"],
 

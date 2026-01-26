@@ -1,0 +1,137 @@
+---
+// Engine Earring - simple landing page
+const year = new Date().getFullYear();
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engine Earring</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+  <div class="page">
+    <div class="card-wrapper">
+      <svg class="card-border" viewBox="0 0 380 650" preserveAspectRatio="none">
+        <path d="
+          M 8 0.5
+          L 356 0.5
+          L 379.5 24
+          L 379.5 642
+          Q 379.5 649.5 372 649.5
+          L 8 649.5
+          Q 0.5 649.5 0.5 642
+          L 0.5 8
+          Q 0.5 0.5 8 0.5
+          Z
+        " fill="#fffee8" stroke="#ccc" stroke-width="1"/>
+      </svg>
+      <div class="card">
+        <div class="header">engine-earring.com</div>
+
+        <div class="logo">
+          <img src="/img/ee.png" alt="Engine Earring">
+        </div>
+
+        <div class="words">
+          <div>software.</div>
+          <div>infrastructure.</div>
+          <div class="creative">creative.</div>
+          <div class="consulting">business-driven</div>
+          <div class="consulting">technology</div>
+          <div class="consulting">consulting</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>&copy; {year}</footer>
+  </div>
+</body>
+</html>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    background-color: #fafafa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .page {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .card-wrapper {
+    position: relative;
+    max-width: 380px;
+    width: 100%;
+  }
+
+  .card-border {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .card {
+    position: relative;
+    padding: 20px 40px 40px;
+    width: 100%;
+  }
+
+  .header {
+    color: #999;
+    font-size: 0.85em;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .logo {
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .logo img {
+    max-width: 200px;
+    height: auto;
+  }
+
+  .words {
+    text-align: right;
+  }
+
+  .words div {
+    letter-spacing: 1px;
+    font-size: 1.5em;
+    margin-bottom: 4px;
+  }
+
+  .words .creative {
+    margin-bottom: 28px;
+  }
+
+  .words .consulting {
+    font-size: 1.1em;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  footer {
+    margin-top: 20px;
+    color: #999;
+    font-size: 0.9em;
+  }
+</style>
