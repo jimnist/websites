@@ -20,7 +20,10 @@
       "Bash(gh run view:*)",
       "Bash(git push)",
       "Bash(du:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(bash /Users/jimnist/.claude/statusline.sh)",
+      "Bash(ls:*)",
+      "Bash(env:*)"
     ]
   }
 }
