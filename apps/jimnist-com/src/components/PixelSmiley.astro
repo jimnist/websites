@@ -7,11 +7,21 @@ const VIEW_SIZE = PIXEL_SIZE * GRID_SIZE; // 380
 const BORDER_COLOR = '#dedede'; // Same as background
 const OUTER_EDGE_COLOR = '#dedede'; // Same as background
 
+// Extra viewBox padding beyond the 1px border margin, so the dance's row
+// shimmy has room to move without clipping. Passed into the client script
+// via define:vars below, so there is a single source of truth.
+const VIEWBOX_PADDING = 10;
+
 // Eye positions in grid coordinates (shifted by 1 to match original half_pixel offset)
 const LEFT_EYE_X = 4;
 const LEFT_EYE_Y = 6;
 const RIGHT_EYE_X = 12;
 const RIGHT_EYE_Y = 6;
+
+// The nose bridge: the single grid cell midway between the two eye blocks.
+// Dwelling here triggers the dance easter egg. See docs/specs/dance-easter-egg.md.
+const NOSE_BRIDGE_X = 9;
+const NOSE_BRIDGE_Y = 7;
 
 // Build pixel set for border calculation
 const yellowSet = new Set<string>();
@@ -72,39 +82,63 @@ const leftBorders = getBorders(lefts, leftSet);
 const rightSet = new Set<string>();
 rights.forEach(p => rightSet.add(`${p.x},${p.y}`));
 const rightBorders = getBorders(rights, rightSet);
+
+// Group face pixels by row so the dance can shimmy each row independently.
+const rowMap = new Map<number, {x: number, y: number, c: string}[]>();
+yellows.forEach(p => {
+  if (!rowMap.has(p.y)) rowMap.set(p.y, []);
+  rowMap.get(p.y)!.push(p);
+});
+const faceRows = Array.from(rowMap.entries()).sort((a, b) => a[0] - b[0]);
 ---
 
 <div class="smiley-container">
   <svg
     id="smiley-svg"
-    viewBox={`-1 -1 ${VIEW_SIZE + 2} ${VIEW_SIZE + 2}`}
+    viewBox={`-${VIEWBOX_PADDING} -${VIEWBOX_PADDING} ${VIEW_SIZE + VIEWBOX_PADDING * 2} ${VIEW_SIZE + VIEWBOX_PADDING * 2}`}
+    data-viewbox-padding={VIEWBOX_PADDING}
+    data-nose-bridge-x={NOSE_BRIDGE_X}
+    data-nose-bridge-y={NOSE_BRIDGE_Y}
   >
-    <!-- Face pixels (no stroke) -->
-    {yellows.map(p => (
-      <rect
-        x={p.x * PIXEL_SIZE}
-        y={p.y * PIXEL_SIZE}
-        width={PIXEL_SIZE}
-        height={PIXEL_SIZE}
-        fill={p.c}
-      />
+    <!-- Face pixels, grouped by row so the dance can shimmy each row -->
+    {faceRows.map(([rowY, pixels]) => (
+      <g class="face-row" data-row={rowY}>
+        {pixels.map(p => (
+          <rect
+            class="pixel"
+            data-gx={p.x}
+            data-gy={p.y}
+            x={p.x * PIXEL_SIZE}
+            y={p.y * PIXEL_SIZE}
+            width={PIXEL_SIZE}
+            height={PIXEL_SIZE}
+            fill={p.c}
+          />
+        ))}
+      </g>
     ))}
-    <!-- Face borders -->
-    {yellowBorders.map(l => (
-      <line
-        x1={l.x1}
-        y1={l.y1}
-        x2={l.x2}
-        y2={l.y2}
-        stroke={l.color}
-        stroke-width="1"
-      />
-    ))}
+    <!-- Face borders (faded out during the dance; rows move independently
+         and would otherwise misalign against static border lines) -->
+    <g id="face-borders">
+      {yellowBorders.map(l => (
+        <line
+          x1={l.x1}
+          y1={l.y1}
+          x2={l.x2}
+          y2={l.y2}
+          stroke={l.color}
+          stroke-width="1"
+        />
+      ))}
+    </g>
 
     <!-- Left eye group -->
     <g id="left-eye" transform={`translate(${LEFT_EYE_X * PIXEL_SIZE}, ${LEFT_EYE_Y * PIXEL_SIZE})`}>
       {lefts.map(p => (
         <rect
+          class="pixel"
+          data-gx={LEFT_EYE_X + p.x}
+          data-gy={LEFT_EYE_Y + p.y}
           x={p.x * PIXEL_SIZE}
           y={p.y * PIXEL_SIZE}
           width={PIXEL_SIZE}
@@ -137,6 +171,9 @@ const rightBorders = getBorders(rights, rightSet);
     <g id="right-eye" transform={`translate(${RIGHT_EYE_X * PIXEL_SIZE}, ${RIGHT_EYE_Y * PIXEL_SIZE})`}>
       {rights.map(p => (
         <rect
+          class="pixel"
+          data-gx={RIGHT_EYE_X + p.x}
+          data-gy={RIGHT_EYE_Y + p.y}
           x={p.x * PIXEL_SIZE}
           y={p.y * PIXEL_SIZE}
           width={PIXEL_SIZE}
@@ -167,10 +204,28 @@ const rightBorders = getBorders(rights, rightSet);
 
     <!-- Logo image -->
     <image href="/img/big_jim.png" x="87" y="240" width="205" height="55" />
+
+    <!-- Nose bridge hotspot: dwelling/long-pressing here triggers the dance.
+         Invisible on purpose - see docs/specs/dance-easter-egg.md. -->
+    <rect
+      id="nose-bridge-hotspot"
+      x={NOSE_BRIDGE_X * PIXEL_SIZE}
+      y={NOSE_BRIDGE_Y * PIXEL_SIZE}
+      width={PIXEL_SIZE}
+      height={PIXEL_SIZE}
+      fill="transparent"
+    />
   </svg>
 </div>
 
 <script>
+  // Read from the frontmatter-rendered data-* attributes rather than
+  // duplicating these constants, so there's a single source of truth.
+  const svgEl = document.getElementById('smiley-svg');
+  const VIEWBOX_PADDING = parseFloat(svgEl?.dataset.viewboxPadding || '0');
+  const NOSE_BRIDGE_X = parseFloat(svgEl?.dataset.noseBridgeX || '0');
+  const NOSE_BRIDGE_Y = parseFloat(svgEl?.dataset.noseBridgeY || '0');
+
   const PIXEL_SIZE = 20;
   const EYE_SIZE = PIXEL_SIZE * 3; // 60px - the 3x3 eye grid
   const PUPIL_SIZE = PIXEL_SIZE * 1.5; // 30px pupil (1.5x like original)
@@ -180,12 +235,15 @@ const rightBorders = getBorders(rights, rightSet);
   // Base position is 15, so max offset is 15 in any direction
   const MAX_OFFSET = PIXEL_SIZE * 0.75; // 15px - keeps pupil inside eye
 
+  const VIEW_SIZE = PIXEL_SIZE * 19; // 380
+  const VIEWBOX_SIZE = VIEW_SIZE + VIEWBOX_PADDING * 2;
+
   function updatePupils(mouseX: number, mouseY: number) {
     const svg = document.getElementById('smiley-svg');
     if (!svg) return;
 
     const svgRect = svg.getBoundingClientRect();
-    const scale = svgRect.width / 380;
+    const scale = svgRect.width / VIEWBOX_SIZE;
 
     ['left', 'right'].forEach(side => {
       const eye = document.getElementById(`${side}-eye`);
@@ -193,16 +251,13 @@ const rightBorders = getBorders(rights, rightSet);
       if (!eye || !pupil) return;
 
       // Get eye position from transform
-      const eyeTransform = eye.getAttribute('transform');
-      const match = eyeTransform?.match(/translate\((\d+),\s*(\d+)\)/);
-      if (!match) return;
+      const { x: eyeX, y: eyeY } = getBaseTranslate(eye);
 
-      const eyeX = parseInt(match[1]);
-      const eyeY = parseInt(match[2]);
-
-      // Calculate eye center in page coordinates (center of 3x3 grid)
-      const eyeCenterX = svgRect.left + (eyeX + EYE_SIZE / 2) * scale;
-      const eyeCenterY = svgRect.top + (eyeY + EYE_SIZE / 2) * scale;
+      // Calculate eye center in page coordinates (center of 3x3 grid).
+      // The viewBox origin is (-VIEWBOX_PADDING, -VIEWBOX_PADDING), so a
+      // raw grid coordinate maps to screen position offset by that padding.
+      const eyeCenterX = svgRect.left + (eyeX + EYE_SIZE / 2 + VIEWBOX_PADDING) * scale;
+      const eyeCenterY = svgRect.top + (eyeY + EYE_SIZE / 2 + VIEWBOX_PADDING) * scale;
 
       // Calculate direction to mouse
       const dx = mouseX - eyeCenterX;
@@ -227,8 +282,268 @@ const rightBorders = getBorders(rights, rightSet);
     });
   }
 
+  // --- Dance easter egg -----------------------------------------------
+  // Dwelling (mouse) or long-pressing (touch) the nose bridge hotspot for
+  // 1s launches an ~8s DDR-style routine: the face's pixel rows shimmy on
+  // the beat while neon colors wave outward from the nose bridge. Under
+  // prefers-reduced-motion, only the color wave runs (no positional
+  // motion), crossfading slowly. See docs/specs/dance-easter-egg.md.
+
+  const NOSE_BRIDGE = { x: NOSE_BRIDGE_X, y: NOSE_BRIDGE_Y };
+  const DWELL_MS = 1000;
+  const BPM = 130;
+  const BEAT_MS = 60000 / BPM;
+  const TOTAL_BEATS = 16; // 4 bars x 4 beats
+  const ROUTINE_MS = BEAT_MS * TOTAL_BEATS; // ~7.4s ("~8s" per spec)
+  const ROW_SHIFT_PX = 5;
+  const NEON_PALETTE = ['#ff2d95', '#00e5ff', '#39ff14', '#b026ff', '#ffe814'];
+  const CALM_TICK_MS = 700;
+  const CALM_TIME_SCALE = 0.35; // slows the color wave for the calm variant
+
+  let danceRunning = false;
+  let rafHandle: number | null = null;
+  let calmIntervalHandle: number | null = null;
+  let danceEndTimeout: number | null = null;
+  let lastMouseX = 0;
+  let lastMouseY = 0;
+  let hasMouseInput = false; // stays false on touch-only devices
+
+  const hotspot = document.getElementById('nose-bridge-hotspot');
+  const facePixels = svgEl
+    ? Array.from(svgEl.querySelectorAll<SVGRectElement>('rect.pixel'))
+    : [];
+  const originalFills = new Map<SVGRectElement, string>();
+  facePixels.forEach(el => originalFills.set(el, el.getAttribute('fill') || ''));
+
+  // Precomputed once: each pixel's grid coordinates never change, so there's
+  // no need to re-read/re-parse the data-gx/data-gy attributes every frame.
+  const facePixelCoords = facePixels.map(el => ({
+    el,
+    gx: parseFloat(el.getAttribute('data-gx') || '0'),
+    gy: parseFloat(el.getAttribute('data-gy') || '0'),
+  }));
+
+  const faceRowGroups = svgEl
+    ? Array.from(svgEl.querySelectorAll<SVGGElement>('g.face-row'))
+    : [];
+  const faceRowInfo = faceRowGroups.map(el => ({
+    el,
+    rowY: parseInt(el.getAttribute('data-row') || '0', 10),
+  }));
+  const leftEyeEl = document.getElementById('left-eye');
+  const rightEyeEl = document.getElementById('right-eye');
+  const leftPupilEl = document.getElementById('left-pupil');
+  const rightPupilEl = document.getElementById('right-pupil');
+
+  function getBaseTranslate(el: Element | null): { x: number; y: number } {
+    const t = el?.getAttribute('transform') || '';
+    const match = t.match(/translate\(([-\d.]+),\s*([-\d.]+)\)/);
+    return match ? { x: parseFloat(match[1]), y: parseFloat(match[2]) } : { x: 0, y: 0 };
+  }
+  const leftEyeBase = getBaseTranslate(leftEyeEl);
+  const rightEyeBase = getBaseTranslate(rightEyeEl);
+
+  function prefersReducedMotion(): boolean {
+    return typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  // Keyed by pointerId so independent pointers (e.g. two touches on the tiny
+  // hotspot at once) can't cancel each other's dwell.
+  const dwellTimers = new Map<number, number>();
+
+  function armDwell(pointerId: number) {
+    if (danceRunning || dwellTimers.has(pointerId)) return;
+    const handle = window.setTimeout(() => {
+      dwellTimers.delete(pointerId);
+      startDance();
+    }, DWELL_MS);
+    dwellTimers.set(pointerId, handle);
+  }
+
+  function disarmDwell(pointerId: number) {
+    const handle = dwellTimers.get(pointerId);
+    if (handle !== undefined) {
+      clearTimeout(handle);
+      dwellTimers.delete(pointerId);
+    }
+  }
+
+  if (hotspot) {
+    hotspot.addEventListener('pointerenter', (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' || e.pointerType === 'pen') armDwell(e.pointerId);
+    });
+    hotspot.addEventListener('pointerleave', (e: PointerEvent) => {
+      // Touch dwell is only canceled by lifting the finger (pointerup) or a
+      // gesture takeover (pointercancel) - ordinary jitter off the tiny
+      // hit-box must not reset it (see docs/specs/dance-easter-egg.md).
+      if (e.pointerType === 'touch') return;
+      disarmDwell(e.pointerId);
+    });
+    hotspot.addEventListener('pointerdown', (e: PointerEvent) => {
+      if (e.pointerType === 'touch') {
+        e.preventDefault();
+        hotspot.setPointerCapture(e.pointerId);
+        armDwell(e.pointerId);
+      }
+    });
+    hotspot.addEventListener('pointerup', (e: PointerEvent) => {
+      if (e.pointerType === 'touch') disarmDwell(e.pointerId);
+    });
+    hotspot.addEventListener('pointercancel', (e: PointerEvent) => disarmDwell(e.pointerId));
+  }
+
+  function paletteColorAt(gx: number, gy: number, tMs: number): string {
+    const dist = Math.hypot(gx - NOSE_BRIDGE.x, gy - NOSE_BRIDGE.y);
+    const phase = tMs / BEAT_MS - dist * 0.35;
+    const idx = Math.floor((((phase % 1) + 1) % 1) * NEON_PALETTE.length);
+    return NEON_PALETTE[idx];
+  }
+
+  // Neon color wave, radiating outward from the nose bridge. Shared between
+  // the full dance's rAF loop and the calm variant's slower interval tick.
+  function applyColorWave(tMs: number) {
+    facePixelCoords.forEach(({ el, gx, gy }) => {
+      el.setAttribute('fill', paletteColorAt(gx, gy, tMs));
+    });
+  }
+
+  function startDance() {
+    danceRunning = true;
+    svgEl?.classList.add('dancing');
+
+    if (prefersReducedMotion()) {
+      svgEl?.classList.add('calm');
+      runCalmVariant();
+    } else {
+      runFullDance();
+    }
+  }
+
+  function runFullDance() {
+    const start = performance.now();
+
+    function frame(now: number) {
+      const t = now - start;
+      if (t >= ROUTINE_MS) {
+        endDance();
+        return;
+      }
+
+      // Face rows shimmy side-to-side, staggered per row for a wave feel.
+      faceRowInfo.forEach(({ el, rowY }) => {
+        const phaseOffset = rowY * (Math.PI / 6);
+        const offsetX = ROW_SHIFT_PX * Math.sin((2 * Math.PI * t) / BEAT_MS + phaseOffset);
+        el.setAttribute('transform', `translate(${offsetX.toFixed(2)}, 0)`);
+      });
+
+      // Eyes shimmy together with the row band they sit in.
+      const eyePhase = 7 * (Math.PI / 6);
+      const eyeOffsetX = ROW_SHIFT_PX * Math.sin((2 * Math.PI * t) / BEAT_MS + eyePhase);
+      if (leftEyeEl) {
+        leftEyeEl.setAttribute('transform', `translate(${(leftEyeBase.x + eyeOffsetX).toFixed(2)}, ${leftEyeBase.y})`);
+      }
+      if (rightEyeEl) {
+        rightEyeEl.setAttribute('transform', `translate(${(rightEyeBase.x + eyeOffsetX).toFixed(2)}, ${rightEyeBase.y})`);
+      }
+
+      // Pupils bop through a handful of look-directions on the beat.
+      const beatIndex = Math.floor(t / BEAT_MS);
+      const bopAmount = MAX_OFFSET * 0.6;
+      const bopDirs = [
+        { x: 0, y: 0 },
+        { x: bopAmount, y: 0 },
+        { x: 0, y: -bopAmount },
+        { x: -bopAmount, y: 0 },
+      ];
+      const dir = bopDirs[beatIndex % bopDirs.length];
+      if (leftPupilEl) {
+        leftPupilEl.setAttribute('x', (PUPIL_BASE + dir.x).toString());
+        leftPupilEl.setAttribute('y', (PUPIL_BASE + dir.y).toString());
+      }
+      if (rightPupilEl) {
+        rightPupilEl.setAttribute('x', (PUPIL_BASE + dir.x).toString());
+        rightPupilEl.setAttribute('y', (PUPIL_BASE + dir.y).toString());
+      }
+
+      applyColorWave(t);
+
+      rafHandle = requestAnimationFrame(frame);
+    }
+
+    rafHandle = requestAnimationFrame(frame);
+  }
+
+  function runCalmVariant() {
+    const start = performance.now();
+
+    // No positional motion in the calm variant: rest the pupils centered
+    // rather than freezing wherever they happened to be at trigger time.
+    if (leftPupilEl) {
+      leftPupilEl.setAttribute('x', PUPIL_BASE.toString());
+      leftPupilEl.setAttribute('y', PUPIL_BASE.toString());
+    }
+    if (rightPupilEl) {
+      rightPupilEl.setAttribute('x', PUPIL_BASE.toString());
+      rightPupilEl.setAttribute('y', PUPIL_BASE.toString());
+    }
+
+    function tick() {
+      const t = (performance.now() - start) * CALM_TIME_SCALE;
+      applyColorWave(t);
+    }
+
+    tick();
+    calmIntervalHandle = window.setInterval(tick, CALM_TICK_MS);
+    danceEndTimeout = window.setTimeout(endDance, ROUTINE_MS);
+  }
+
+  function endDance() {
+    if (rafHandle !== null) {
+      cancelAnimationFrame(rafHandle);
+      rafHandle = null;
+    }
+    if (calmIntervalHandle !== null) {
+      clearInterval(calmIntervalHandle);
+      calmIntervalHandle = null;
+    }
+    if (danceEndTimeout !== null) {
+      clearTimeout(danceEndTimeout);
+      danceEndTimeout = null;
+    }
+
+    facePixels.forEach(el => {
+      const original = originalFills.get(el);
+      if (original !== undefined) el.setAttribute('fill', original);
+    });
+
+    faceRowGroups.forEach(row => row.setAttribute('transform', 'translate(0, 0)'));
+    if (leftEyeEl) leftEyeEl.setAttribute('transform', `translate(${leftEyeBase.x}, ${leftEyeBase.y})`);
+    if (rightEyeEl) rightEyeEl.setAttribute('transform', `translate(${rightEyeBase.x}, ${rightEyeBase.y})`);
+
+    svgEl?.classList.remove('dancing', 'calm');
+    danceRunning = false;
+
+    // Rest pupils centered by default (correct for touch, which has no
+    // persistent cursor position), then snap to the real cursor immediately
+    // if this device has ever reported one.
+    if (leftPupilEl) {
+      leftPupilEl.setAttribute('x', PUPIL_BASE.toString());
+      leftPupilEl.setAttribute('y', PUPIL_BASE.toString());
+    }
+    if (rightPupilEl) {
+      rightPupilEl.setAttribute('x', PUPIL_BASE.toString());
+      rightPupilEl.setAttribute('y', PUPIL_BASE.toString());
+    }
+    if (hasMouseInput) updatePupils(lastMouseX, lastMouseY);
+  }
+  // --- end dance easter egg --------------------------------------------
+
   document.addEventListener('mousemove', (e) => {
-    updatePupils(e.clientX, e.clientY);
+    hasMouseInput = true;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    if (!danceRunning) updatePupils(lastMouseX, lastMouseY);
   });
 </script>
 
@@ -247,5 +562,24 @@ const rightBorders = getBorders(rights, rightSet);
 
   .pupil {
     pointer-events: none;
+  }
+
+  #face-borders {
+    transition: opacity 200ms ease;
+  }
+
+  #smiley-svg.dancing #face-borders {
+    opacity: 0;
+  }
+
+  #smiley-svg.calm .pixel {
+    transition: fill 550ms ease-in-out;
+  }
+
+  #nose-bridge-hotspot {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 </style>
