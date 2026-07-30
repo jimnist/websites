@@ -36,16 +36,17 @@ it. The only way to start the dance.
 _Avoid_: hover (a plain hover does not trigger anything)
 
 **Dance**:
-The easter-egg state the icon enters after a dwell: beat-locked neon
-confetti, DDR-style - the face snaps to new random palette colors exactly
-on the beat, with no blending, like an arcade cabinet's flashing panels.
-Hue is chosen per 2x2 block (chunky panels); lightness is per pixel, from
-each square's original grayscale value - darkest pixels darken the neon,
-lightest lighten it - so the face's shading shows through as a
-full-contrast neon relief. Nothing ever moves - the squares stay put and
-only their colors change. Silent. The eye whites sit out so the eyes stay
-readable; pupil cursor tracking keeps working; the signature keeps its
-original color. When the dance ends the face returns exactly to normal.
+The easter-egg state the icon enters after a dwell: a beat-locked
+traveling color wave, DDR-style - neon colors ignite at the nose bridge
+and march outward block to adjacent block, each 2x2 block taking the color
+its inner neighbor just had, snapping with no blending. Hue travels at
+2x2-block resolution; lightness is per pixel, from each square's original
+grayscale value - darkest pixels darken the neon, lightest lighten it - so
+the face's shading shows through as a full-contrast neon relief. Nothing
+ever moves - the squares stay put and only their colors change. Silent.
+The eye whites sit out so the eyes stay readable; pupil cursor tracking
+keeps working; the signature keeps its original color. When the dance ends
+the face returns exactly to normal.
 _Avoid_: shimmy (retired - early design had rows moving; the dance is color
 change only), wave (retired - an orderly radial ripple was replaced by
 random confetti), rave, disco mode, animation (too generic)

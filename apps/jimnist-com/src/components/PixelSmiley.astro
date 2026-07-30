@@ -31,28 +31,22 @@ const BEAT_MS = 60000 / BPM; // ~461.5ms
 const ROUTINE_MS = Math.round(BEAT_MS * 16); // 4 bars x 4 beats, ~7.4s
 const WAVE_CYCLE_MS = Math.round(BEAT_MS * 5); // one beat per palette color
 
-// Deterministic randomness, hashed at build time (GLSL-style sin hash -
-// scatters well, no visible diagonals). The dance runs at a chunky 2x2
-// resolution: coordinates are quantized to 2x2 blocks before hashing, so
-// all squares in a block share one phase and palette order and strobe as
-// a single larger panel.
-function blockHash(gx: number, gy: number): number {
+// The colors travel: every block runs the same palette cycle, phase-offset
+// by its Manhattan distance (in 2x2 blocks) from the nose bridge. Manhattan
+// distance is the adjacency metric, so on each step every block takes the
+// color its inner neighbor just had - diamond color fronts visibly march
+// outward from the trigger point, block to adjacent block. The delays are
+// positive, so blocks sit in their original colors until the wave reaches
+// them: the dance ignites at the nose bridge and pours outward.
+const RING_MS = BEAT_MS / 2; // wavefront advances one block ring per half beat
+
+function ravePhase(gx: number, gy: number): string {
   const bx = Math.floor(gx / 2);
   const by = Math.floor(gy / 2);
-  const h = Math.sin(bx * 127.1 + by * 311.7) * 43758.5453;
-  return h - Math.floor(h); // 0..1
-}
-
-// Random phase, quantized to whole beats so every block still snaps in sync
-// with the beat grid - chaos in space, unity in time.
-function ravePhase(gx: number, gy: number): string {
-  const beats = Math.floor(blockHash(gx, gy) * 5); // 0..4 beats
-  return `${Math.round(beats * BEAT_MS)}ms`;
-}
-
-// Which of the two palette orders this block follows.
-function raveTrack(gx: number, gy: number): string {
-  return blockHash(gx + 58, gy + 24) < 0.5 ? 'rave-a' : 'rave-b';
+  const nbx = Math.floor(NOSE_BRIDGE_X / 2);
+  const nby = Math.floor(NOSE_BRIDGE_Y / 2);
+  const ring = Math.abs(bx - nbx) + Math.abs(by - nby);
+  return `${Math.round(ring * RING_MS)}ms`;
 }
 
 // Per-pixel shading: the dance preserves the face's original light/dark
@@ -159,11 +153,12 @@ const rightBorders = getBorders(rights, rightSet);
     data-routine-ms={ROUTINE_MS}
   >
     <!-- Face pixels (no stroke). The squares never move; the dance only
-         layers a CSS fill animation over them, with a per-pixel random
-         beat phase and palette order for the DDR confetti-strobe look. -->
+         layers a CSS fill animation over them - phase from the block's
+         distance to the nose bridge (the traveling wave), shading from
+         each pixel's own original grayscale value (the neon relief). -->
     {yellows.map(p => (
       <rect
-        class={`pixel ${raveTrack(p.x, p.y)}`}
+        class="pixel rave"
         style={`--rave-phase: ${ravePhase(p.x, p.y)}; ${raveShadeVars(p.c)}`}
         x={p.x * PIXEL_SIZE}
         y={p.y * PIXEL_SIZE}
@@ -459,7 +454,7 @@ const rightBorders = getBorders(rights, rightSet);
      of --rave-dark / --rave-light is nonzero per pixel. The face's
      light/dark texture shows through the neon with full contrast.
      var() inside keyframes resolves per animating element. */
-  @keyframes jimnist-rave-a {
+  @keyframes jimnist-rave {
     0%   { fill: color-mix(in srgb, color-mix(in srgb, #ff2d95, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* hot pink */
     20%  { fill: color-mix(in srgb, color-mix(in srgb, #00e5ff, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* cyan */
     40%  { fill: color-mix(in srgb, color-mix(in srgb, #39ff14, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* electric green */
@@ -468,34 +463,21 @@ const rightBorders = getBorders(rights, rightSet);
     100% { fill: color-mix(in srgb, color-mix(in srgb, #ff2d95, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); }
   }
 
-  /* Second palette order, offset so a same-phase pixel on the other track
-     never shows the same color at the same time. */
-  @keyframes jimnist-rave-b {
-    0%   { fill: color-mix(in srgb, color-mix(in srgb, #39ff14, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* electric green */
-    20%  { fill: color-mix(in srgb, color-mix(in srgb, #ffe814, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* laser yellow */
-    40%  { fill: color-mix(in srgb, color-mix(in srgb, #b026ff, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* purple */
-    60%  { fill: color-mix(in srgb, color-mix(in srgb, #ff2d95, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* hot pink */
-    80%  { fill: color-mix(in srgb, color-mix(in srgb, #00e5ff, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* cyan */
-    100% { fill: color-mix(in srgb, color-mix(in srgb, #39ff14, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); }
-  }
-
-  /* Only squares carrying a rave track animate - the eye whites have no
-     track class, so they sit out and the eyes stay readable. */
-  #smiley-svg.dancing .rave-a,
-  #smiley-svg.dancing .rave-b {
-    animation: jimnist-rave-a var(--waveCycle) steps(1, end) infinite;
-    animation-delay: calc(-1 * var(--rave-phase, 0ms));
-  }
-
-  #smiley-svg.dancing .rave-b {
-    animation-name: jimnist-rave-b;
+  /* Only squares carrying the rave class animate - the eye whites have no
+     rave class, so they sit out and the eyes stay readable. Every block
+     runs the SAME cycle; the positive per-block delay (Manhattan distance
+     from the nose bridge) is what makes the colors travel: each block
+     takes the color its inner neighbor just had, and until the wave
+     reaches it, it rests in its original color. */
+  #smiley-svg.dancing .rave {
+    animation: jimnist-rave var(--waveCycle) steps(1, end) infinite;
+    animation-delay: var(--rave-phase, 0ms);
   }
 
   /* Calm variant: under prefers-reduced-motion the colors still cycle, but
      at half speed with gentle easing - a slow crossfade, no beat snap. */
   @media (prefers-reduced-motion: reduce) {
-    #smiley-svg.dancing .rave-a,
-    #smiley-svg.dancing .rave-b {
+    #smiley-svg.dancing .rave {
       animation-duration: var(--waveCycleCalm);
       animation-timing-function: ease-in-out;
     }

@@ -17,21 +17,26 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 
 ## The dance
 
-- **Nothing moves.** The dance is beat-locked neon confetti: the face snaps
-  to new colors exactly on the beat (~130 BPM, hard `steps()` cuts, no
-  blending). The **hue** is chosen at a chunky **2x2-block resolution** -
-  each block strobes as one panel with its own pseudo-random phase and one
-  of two palette orders - while the **lightness** is per individual pixel:
+- **Nothing moves - but the colors travel.** The dance is a beat-locked
+  traveling wave: every 2x2 block runs the same palette cycle (~130 BPM,
+  hard `steps()` cuts, no blending), phase-offset by its Manhattan distance
+  from the nose bridge, so each block takes the color its inner neighbor
+  just had. Diamond color fronts visibly march outward from the trigger
+  point, block to adjacent block, one ring per half beat. The delays are
+  positive, so the dance ignites at the nose bridge and pours outward
+  across the resting face. The **hue** travels at 2x2-block resolution,
+  while the **lightness** is per individual pixel:
   each square shades its panel's color by its original grayscale value,
   with the pure palette color sitting mid-range - the darkest pixels
   darken it toward black (up to `MAX_DARK`, 50%) and the lightest lift it
   toward white (up to `MAX_LIFT`, 70%). The face's original shading shows
   through the strobe as a full-contrast neon relief. Chaos in space,
   unity in time.
-  (Revised 2026-07: the original spec had pixel rows shifting side-to-side;
-  jim clarified the "shimmy" was always meant as color change over fixed
-  squares, then chose random beat-snapped confetti over an orderly radial
-  wave to match the arcade feel.)
+  (Revised 2026-07, three times: the original spec had pixel rows shifting
+  side-to-side; jim clarified the "shimmy" was always meant as color change
+  over fixed squares. A random beat-snapped confetti version followed, then
+  jim chose neighbor-to-neighbor color travel over randomness - the motion
+  of the colors is the choreography.)
 - Silent - the beat is visual only. No audio assets.
 - Palette: hot pink `#ff2d95`, cyan `#00e5ff`, electric green `#39ff14`,
   purple `#b026ff`, laser yellow `#ffe814`.
