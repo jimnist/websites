@@ -20,41 +20,36 @@ const NOSE_BRIDGE_X = 9;
 const NOSE_BRIDGE_Y = 7;
 
 // Dance timing. The dance recolors the fixed squares DDR-style - nothing
-// ever moves. It is implemented entirely in CSS: while the `dancing` class
-// is set, every pixel snaps between neon colors exactly on the beat
-// (steps() timing), but each pixel gets a pseudo-random phase offset and
-// one of two palette orders, so the face strobes as beat-locked confetti
-// rather than an orderly gradient - like the flashing panels of an arcade
-// cabinet. The client script only toggles the class on and off.
+// in the face ever moves. When the `dancing` class lands, the face snaps
+// into a random neon mosaic (one palette color per 2x2 block, shaded per
+// pixel), and a single 2x2 roamer block of a distinct color random-walks
+// across the mosaic, hopping to an adjacent block on every beat. All of
+// it is precomputed at build time and driven by CSS; the client script
+// only toggles the class on and off.
 const BPM = 130;
 const BEAT_MS = 60000 / BPM; // ~461.5ms
-const ROUTINE_MS = Math.round(BEAT_MS * 16); // 4 bars x 4 beats, ~7.4s
-const WAVE_CYCLE_MS = Math.round(BEAT_MS * 5); // one beat per palette color
+const ROUTINE_BEATS = 16; // 4 bars x 4 beats
+const ROUTINE_MS = Math.round(BEAT_MS * ROUTINE_BEATS); // ~7.4s
 
-// The colors travel: every block runs the same palette cycle, phase-offset
-// by its Manhattan distance (in 2x2 blocks) from the nose bridge. Manhattan
-// distance is the adjacency metric, so on each step every block takes the
-// color its inner neighbor just had - diamond color fronts visibly march
-// outward from the trigger point, block to adjacent block. The delays are
-// positive, so blocks sit in their original colors until the wave reaches
-// them: the dance ignites at the nose bridge and pours outward.
-const RING_MS = BEAT_MS / 2; // wavefront advances one block ring per half beat
+const NEON_PALETTE = ['#ff2d95', '#00e5ff', '#39ff14', '#b026ff', '#ffe814'];
+const ROAMER_COLOR = '#ffffff'; // the one color that roams - tune by eye
+const ROAMER_SEED = 20260730; // deterministic walk; change to reroll it
 
-function ravePhase(gx: number, gy: number): string {
-  const bx = Math.floor(gx / 2);
-  const by = Math.floor(gy / 2);
-  const nbx = Math.floor(NOSE_BRIDGE_X / 2);
-  const nby = Math.floor(NOSE_BRIDGE_Y / 2);
-  const ring = Math.abs(bx - nbx) + Math.abs(by - nby);
-  return `${Math.round(ring * RING_MS)}ms`;
+// Deterministic per-block randomness for the mosaic (GLSL-style sin hash -
+// scatters well, no visible diagonals).
+function blockHash(bx: number, by: number): number {
+  const h = Math.sin(bx * 127.1 + by * 311.7) * 43758.5453;
+  return h - Math.floor(h); // 0..1
 }
 
-// Per-pixel shading: the dance preserves the face's original light/dark
-// structure as a neon relief. The hue is chosen per 2x2 block (chunky
-// panels), but each individual square's lightness comes from its own
-// original pixel. The palette color sits in the middle of the range:
-// the darkest pixels push it toward black, the lightest toward white,
-// so the face's full-resolution depth shows through the panels.
+function blockOf(gx: number, gy: number): { bx: number; by: number } {
+  return { bx: Math.floor(gx / 2), by: Math.floor(gy / 2) };
+}
+
+// Per-pixel shading preserves the face's original light/dark structure as
+// a neon relief: the block's palette color sits mid-range, the darkest
+// pixels push it toward black and the lightest toward white. All mixing
+// happens here at build time, so the CSS needs no color-mix() support.
 function hexLuma(hex: string): number {
   const h = hex.length === 4
     ? hex.slice(1).split('').map(c => c + c).join('')
@@ -72,17 +67,116 @@ const lumaMax = Math.max(...faceLumas);
 const MAX_DARK = 50; // % toward black for the darkest pixel - tune by eye
 const MAX_LIFT = 70; // % toward white for the lightest pixel - tune by eye
 
-// Maps a pixel's original grayscale value onto the shading range:
-// lumaMin -> MAX_DARK% toward black, mid -> pure palette color,
-// lumaMax -> MAX_LIFT% toward white. Exactly one of the two vars is 0%.
-function raveShadeVars(originalColor: string): string {
+// Channel-wise mix of a hex color toward a target (t in 0..1).
+function mixHex(hex: string, target: [number, number, number], t: number): string {
+  const h = hex.length === 4
+    ? hex.slice(1).split('').map(c => c + c).join('')
+    : hex.slice(1);
+  const mix = (i: number) => {
+    const v = parseInt(h.slice(i * 2, i * 2 + 2), 16);
+    return Math.round(v + (target[i] - v) * t).toString(16).padStart(2, '0');
+  };
+  return `#${mix(0)}${mix(1)}${mix(2)}`;
+}
+
+// The mosaic color a pixel shows while dancing: its block's random palette
+// pick, shaded by the pixel's own original grayscale value.
+function mosaicColor(gx: number, gy: number, originalColor: string): string {
+  const { bx, by } = blockOf(gx, gy);
+  const base = NEON_PALETTE[Math.floor(blockHash(bx, by) * NEON_PALETTE.length)];
   const luma = hexLuma(originalColor);
   const t = lumaMax > lumaMin ? (luma - lumaMin) / (lumaMax - lumaMin) : 0;
   const shade = t * (MAX_DARK + MAX_LIFT) - MAX_DARK; // -MAX_DARK..+MAX_LIFT
-  const dark = Math.round(Math.max(0, -shade));
-  const light = Math.round(Math.max(0, shade));
-  return `--rave-dark: ${dark}%; --rave-light: ${light}%`;
+  return shade < 0
+    ? mixHex(base, [0, 0, 0], -shade / 100)
+    : mixHex(base, [255, 255, 255], shade / 100);
 }
+
+// --- The roamer: a seeded random walk over the face, one hop per beat ---
+
+// A block is walkable when all four of its cells are face pixels - this
+// automatically excludes the eye regions (their cells live in lefts/rights,
+// not yellows) and any block hanging off the face's edge.
+const walkable = new Set<string>();
+{
+  const cell = new Set(yellows.map(p => `${p.x},${p.y}`));
+  for (let bx = 0; bx < Math.ceil(GRID_SIZE / 2); bx++) {
+    for (let by = 0; by < Math.ceil(GRID_SIZE / 2); by++) {
+      if (
+        cell.has(`${bx * 2},${by * 2}`) &&
+        cell.has(`${bx * 2 + 1},${by * 2}`) &&
+        cell.has(`${bx * 2},${by * 2 + 1}`) &&
+        cell.has(`${bx * 2 + 1},${by * 2 + 1}`)
+      ) {
+        walkable.add(`${bx},${by}`);
+      }
+    }
+  }
+}
+
+// Small deterministic PRNG (mulberry32) so the walk is stable per build.
+function mulberry32(seed: number): () => number {
+  let a = seed;
+  return () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Random walk: start on the nose-bridge block, hop to a walkable neighbor
+// each beat, avoiding an immediate backtrack when any other option exists.
+const roamerPath: { bx: number; by: number }[] = [];
+{
+  const rand = mulberry32(ROAMER_SEED);
+  let cur = blockOf(NOSE_BRIDGE_X, NOSE_BRIDGE_Y);
+  let prev: { bx: number; by: number } | null = null;
+  roamerPath.push(cur);
+  for (let i = 0; i < ROUTINE_BEATS; i++) {
+    const neighbors = [
+      { bx: cur.bx + 1, by: cur.by },
+      { bx: cur.bx - 1, by: cur.by },
+      { bx: cur.bx, by: cur.by + 1 },
+      { bx: cur.bx, by: cur.by - 1 },
+    ].filter(b => walkable.has(`${b.bx},${b.by}`));
+    let options = neighbors.filter(b => !prev || b.bx !== prev.bx || b.by !== prev.by);
+    if (options.length === 0) options = neighbors;
+    const next = options[Math.floor(rand() * options.length)];
+    roamerPath.push(next);
+    prev = cur;
+    cur = next;
+  }
+}
+
+// The walk as a CSS keyframes rule: one stop per beat, discrete hops via
+// steps(1, end). Injected as a global style because Astro scopes keyframe
+// names inside its scoped <style> blocks.
+const BLOCK_PX = PIXEL_SIZE * 2;
+const roamerStops = roamerPath
+  .map((b, i) => {
+    const pct = ((i / (roamerPath.length - 1)) * 100).toFixed(2);
+    return `${pct}% { transform: translate(${b.bx * BLOCK_PX}px, ${b.by * BLOCK_PX}px); }`;
+  })
+  .join('\n  ');
+
+const roamerCss = `
+@keyframes jimnist-roam {
+  ${roamerStops}
+}
+#rave-roamer {
+  visibility: hidden;
+}
+#smiley-svg.dancing #rave-roamer {
+  visibility: visible;
+  animation: jimnist-roam ${ROUTINE_MS}ms steps(1, end) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  #smiley-svg.dancing #rave-roamer {
+    visibility: hidden;
+  }
+}
+`;
 
 // Build pixel set for border calculation
 const yellowSet = new Set<string>();
@@ -152,14 +246,13 @@ const rightBorders = getBorders(rights, rightSet);
     data-viewbox-padding={VIEWBOX_PADDING}
     data-routine-ms={ROUTINE_MS}
   >
-    <!-- Face pixels (no stroke). The squares never move; the dance only
-         layers a CSS fill animation over them - phase from the block's
-         distance to the nose bridge (the traveling wave), shading from
-         each pixel's own original grayscale value (the neon relief). -->
+    <!-- Face pixels (no stroke). The squares never move; while dancing,
+         each shows its precomputed mosaic color (block's random palette
+         pick, shaded by the pixel's own original grayscale value). -->
     {yellows.map(p => (
       <rect
         class="pixel rave"
-        style={`--rave-phase: ${ravePhase(p.x, p.y)}; ${raveShadeVars(p.c)}`}
+        style={`--rave-bg: ${mosaicColor(p.x, p.y, p.c)}`}
         x={p.x * PIXEL_SIZE}
         y={p.y * PIXEL_SIZE}
         width={PIXEL_SIZE}
@@ -167,6 +260,21 @@ const rightBorders = getBorders(rights, rightSet);
         fill={p.c}
       />
     ))}
+
+    <!-- The roamer: one 2x2 block that random-walks the mosaic on the
+         beat while dancing (path precomputed at build time - see the
+         injected jimnist-roam keyframes). Drawn before the border lines
+         so the grid renders over it, and before the eyes and signature
+         so it passes behind them. -->
+    <rect
+      id="rave-roamer"
+      x="0"
+      y="0"
+      width={PIXEL_SIZE * 2}
+      height={PIXEL_SIZE * 2}
+      fill={ROAMER_COLOR}
+    />
+
     <!-- Face borders -->
     {yellowBorders.map(l => (
       <line
@@ -264,6 +372,10 @@ const rightBorders = getBorders(rights, rightSet);
     />
   </svg>
 </div>
+
+<!-- Build-time-generated roamer walk (global: Astro scopes keyframe names
+     inside its scoped style blocks, so the walk lives here instead). -->
+<Fragment set:html={`<style>${roamerCss}</style>`} />
 
 <script>
   const PIXEL_SIZE = 20;
@@ -410,10 +522,7 @@ const rightBorders = getBorders(rights, rightSet);
   // --- end dance easter egg --------------------------------------------
 </script>
 
-<style define:vars={{
-  waveCycle: `${WAVE_CYCLE_MS}ms`,
-  waveCycleCalm: `${WAVE_CYCLE_MS * 2}ms`,
-}}>
+<style>
   .smiley-container {
     width: 90vmin;
     max-width: 500px;
@@ -448,38 +557,23 @@ const rightBorders = getBorders(rights, rightSet);
      lands, so the strobe hits the whole face instantly. CSS `fill`
      overrides the SVG fill attribute, so removing the class restores
      every original color with no bookkeeping. */
-  /* Each keyframe shades the palette color by the pixel's own build-time
-     vars (from its original grayscale value): darkened toward black for
-     the darkest pixels, lifted toward white for the lightest - exactly one
-     of --rave-dark / --rave-light is nonzero per pixel. The face's
-     light/dark texture shows through the neon with full contrast.
-     var() inside keyframes resolves per animating element. */
-  @keyframes jimnist-rave {
-    0%   { fill: color-mix(in srgb, color-mix(in srgb, #ff2d95, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* hot pink */
-    20%  { fill: color-mix(in srgb, color-mix(in srgb, #00e5ff, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* cyan */
-    40%  { fill: color-mix(in srgb, color-mix(in srgb, #39ff14, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* electric green */
-    60%  { fill: color-mix(in srgb, color-mix(in srgb, #b026ff, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* purple */
-    80%  { fill: color-mix(in srgb, color-mix(in srgb, #ffe814, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* laser yellow */
-    100% { fill: color-mix(in srgb, color-mix(in srgb, #ff2d95, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); }
-  }
-
-  /* Only squares carrying the rave class animate - the eye whites have no
-     rave class, so they sit out and the eyes stay readable. Every block
-     runs the SAME cycle; the positive per-block delay (Manhattan distance
-     from the nose bridge) is what makes the colors travel: each block
-     takes the color its inner neighbor just had, and until the wave
-     reaches it, it rests in its original color. */
+  /* The mosaic: while dancing, each face pixel shows its precomputed
+     --rave-bg (block's random palette color, shaded by the pixel's own
+     grayscale value). A static CSS override - no animation, and removing
+     the class restores the fill attribute with no bookkeeping. Only
+     squares carrying the rave class change; the eye whites have none, so
+     they sit out and the eyes stay readable. The motion is the roamer -
+     see the injected jimnist-roam keyframes. */
   #smiley-svg.dancing .rave {
-    animation: jimnist-rave var(--waveCycle) steps(1, end) infinite;
-    animation-delay: var(--rave-phase, 0ms);
+    fill: var(--rave-bg);
   }
 
-  /* Calm variant: under prefers-reduced-motion the colors still cycle, but
-     at half speed with gentle easing - a slow crossfade, no beat snap. */
+  /* Calm variant: under prefers-reduced-motion the mosaic crossfades in
+     and out gently instead of snapping (the roamer is hidden - see the
+     injected roamer style). */
   @media (prefers-reduced-motion: reduce) {
-    #smiley-svg.dancing .rave {
-      animation-duration: var(--waveCycleCalm);
-      animation-timing-function: ease-in-out;
+    .rave {
+      transition: fill 800ms ease-in-out;
     }
   }
 </style>

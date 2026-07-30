@@ -17,33 +17,35 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 
 ## The dance
 
-- **Nothing moves - but the colors travel.** The dance is a beat-locked
-  traveling wave: every 2x2 block runs the same palette cycle (~130 BPM,
-  hard `steps()` cuts, no blending), phase-offset by its Manhattan distance
-  from the nose bridge, so each block takes the color its inner neighbor
-  just had. Diamond color fronts visibly march outward from the trigger
-  point, block to adjacent block, one ring per half beat. The delays are
-  positive, so the dance ignites at the nose bridge and pours outward
-  across the resting face. The **hue** travels at 2x2-block resolution,
-  while the **lightness** is per individual pixel:
-  each square shades its panel's color by its original grayscale value,
-  with the pure palette color sitting mid-range - the darkest pixels
-  darken it toward black (up to `MAX_DARK`, 50%) and the lightest lift it
-  toward white (up to `MAX_LIFT`, 70%). The face's original shading shows
-  through the strobe as a full-contrast neon relief. Chaos in space,
-  unity in time.
-  (Revised 2026-07, three times: the original spec had pixel rows shifting
-  side-to-side; jim clarified the "shimmy" was always meant as color change
-  over fixed squares. A random beat-snapped confetti version followed, then
-  jim chose neighbor-to-neighbor color travel over randomness - the motion
-  of the colors is the choreography.)
+- **A random mosaic plus one roamer.** When the dance starts, the face
+  snaps into a random neon **mosaic**: one palette color per 2x2 block
+  (hashed from block coordinates at build time), static for the whole
+  routine. The motion is the **roamer** - a single 2x2 block of a distinct
+  color (`ROAMER_COLOR`, white) that random-walks across the face, hopping
+  to an adjacent walkable block on every beat (~130 BPM, discrete
+  `steps()` hops, no sliding). The walk starts on the nose-bridge block,
+  avoids immediate backtracks, and only visits blocks whose four cells are
+  all face pixels - so it never covers the eyes, and it passes behind the
+  grid lines, eyes, and signature (SVG paint order). The walk is a seeded
+  build-time random walk (`ROAMER_SEED`), so it is random-looking but
+  identical on every trigger; change the seed to reroll it.
+  The mosaic's **lightness** is per individual pixel: each square shades
+  its block's color by its original grayscale value, with the pure palette
+  color sitting mid-range - the darkest pixels darken it toward black (up
+  to `MAX_DARK`, 50%) and the lightest lift it toward white (up to
+  `MAX_LIFT`, 70%) - so the face's shading shows through as a neon relief.
+  (Revised 2026-07, four times: rows shifting side-to-side -> color change
+  over fixed squares -> random beat-snapped confetti -> orderly traveling
+  wave -> this: jim found the wave too orderly and chose a random static
+  mosaic with a single roaming block as the dancer.)
 - Silent - the beat is visual only. No audio assets.
 - Palette: hot pink `#ff2d95`, cyan `#00e5ff`, electric green `#39ff14`,
   purple `#b026ff`, laser yellow `#ffe814`.
-- Only pixel colors change, and only as a CSS override: the animation is
-  pure CSS (`.dancing` class + per-pixel random beat phase hashed from grid
-  coordinates at build time), so the `fill` attributes are never touched
-  and removing the class restores every original color with no bookkeeping.
+- Only pixel colors change, and only as a CSS override: the mosaic is a
+  static `.dancing` fill rule (shaded hexes precomputed at build time - no
+  `color-mix()` dependency) and the roamer is one generated `@keyframes`
+  walk, so the `fill` attributes are never touched and removing the class
+  restores every original color with no bookkeeping.
   Grid borders and page background untouched.
 - The eye whites sit out entirely (no animation), so the eyes stay readable
   through the confetti; the pupils sit out too, and pupil cursor tracking
@@ -65,12 +67,13 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 
 ## Accessibility
 
-- `prefers-reduced-motion`: the calm variant - the same color wave at half
-  speed with gentle easing (a slow crossfade, no beat snap).
-  Handled entirely by a CSS media query.
-- Color pulses are traveling waves, never full-face strobes.
-  Stay comfortably under the WCAG 3-flashes-per-second line
-  (130 BPM = ~2.2 pulses/s).
+- `prefers-reduced-motion`: the calm variant - the mosaic crossfades in
+  and out gently (800ms ease) instead of snapping, and the roamer is
+  hidden entirely (a teleporting block is exactly the motion those users
+  opted out of). Handled entirely by CSS media queries.
+- The mosaic is static and only the roamer changes per beat (~2.2 hops/s,
+  affecting one block at a time) - comfortably under the WCAG
+  3-flashes-per-second general-flash line.
 
 ## Verified grid facts
 
