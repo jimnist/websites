@@ -39,19 +39,20 @@ _Avoid_: hover (a plain hover does not trigger anything)
 The easter-egg state the icon enters after a dwell: the face snaps into a
 static random neon mosaic (one palette color per 2x2 block, shaded per
 pixel by its original grayscale value so the face reads as a neon relief),
-and the roamer dances across it. Silent. The eye whites sit out so the
+and the roamers dance across it. Silent. The eye whites sit out so the
 eyes stay readable; pupil cursor tracking keeps working; the signature
 keeps its original color. When the dance ends the face returns exactly to
 normal.
 
-**Roamer**:
-The dance's single dancer: one 2x2 block of a distinct color (white) that
-random-walks the mosaic, hopping to an adjacent walkable block on every
-beat. It starts on the nose-bridge block, never covers the eyes, and
-passes behind the grid lines, eyes, and signature. Its walk is seeded at
-build time - random-looking, identical every trigger.
-_Avoid_: cursor (that's the user's pointer), sprite (nothing moves but
-this block's position)
+**Roamers**:
+The dance's troupe: five 2x2 blocks (alternating white and near-black)
+that random-walk the mosaic, each hopping to an adjacent walkable block
+every half beat. The first starts on the nose-bridge block, the rest
+scatter; they never cover the eyes, and pass behind the grid lines, eyes,
+and signature. Their walks are seeded at build time - random-looking,
+identical every trigger.
+_Avoid_: cursor (that's the user's pointer), sprites (nothing moves but
+their block positions)
 _Avoid_: shimmy (retired - early design had rows moving; the dance is color
 change only), wave (retired - an orderly radial ripple was replaced by
 random confetti), rave, disco mode, animation (too generic)
@@ -64,7 +65,7 @@ _Avoid_: loop (a routine never repeats by itself)
 
 **Calm variant**:
 The dance as experienced under `prefers-reduced-motion`: the mosaic
-crossfades in and out gently instead of snapping, and the roamer is
+crossfades in and out gently instead of snapping, and the roamers are
 hidden.
 _Avoid_: disabled mode (the egg still works; only the motion is gone)
 

@@ -32,8 +32,11 @@ const ROUTINE_BEATS = 16; // 4 bars x 4 beats
 const ROUTINE_MS = Math.round(BEAT_MS * ROUTINE_BEATS); // ~7.4s
 
 const NEON_PALETTE = ['#ff2d95', '#00e5ff', '#39ff14', '#b026ff', '#ffe814'];
-const ROAMER_COLOR = '#ffffff'; // the one color that roams - tune by eye
-const ROAMER_SEED = 20260730; // deterministic walk; change to reroll it
+// The roaming dancers: one 2x2 block each, alternating bright and dark so
+// they pop against the mosaic either way. Add/remove entries to change the
+// troupe size.
+const ROAMER_COLORS = ['#ffffff', '#111111', '#ffffff', '#111111', '#ffffff'];
+const ROAMER_SEED = 20260730; // deterministic walks; change to reroll them
 
 // Deterministic per-block randomness for the mosaic (GLSL-style sin hash -
 // scatters well, no visible diagonals).
@@ -64,8 +67,10 @@ const faceLumas = yellows.map(p => hexLuma(p.c));
 const lumaMin = Math.min(...faceLumas);
 const lumaMax = Math.max(...faceLumas);
 
-const MAX_DARK = 50; // % toward black for the darkest pixel - tune by eye
-const MAX_LIFT = 70; // % toward white for the lightest pixel - tune by eye
+const MAX_DARK = 55; // % toward black for the darkest pixel - tune by eye
+const MAX_LIFT = 35; // % toward white for the lightest pixel - tune by eye
+// (Most of the face is light, so MAX_LIFT dominates the overall look -
+// keep it low or the whole mosaic washes out toward pastel.)
 
 // Channel-wise mix of a hex color toward a target (t in 0..1).
 function mixHex(hex: string, target: [number, number, number], t: number): string {
@@ -125,15 +130,22 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-// Random walk: start on the nose-bridge block, hop to a walkable neighbor
-// each beat, avoiding an immediate backtrack when any other option exists.
-const roamerPath: { bx: number; by: number }[] = [];
-{
-  const rand = mulberry32(ROAMER_SEED);
-  let cur = blockOf(NOSE_BRIDGE_X, NOSE_BRIDGE_Y);
+// Random walks: hop to a walkable neighbor every half beat, avoiding an
+// immediate backtrack when any other option exists. The first roamer
+// starts on the nose-bridge block; the rest scatter from seeded random
+// walkable blocks.
+const ROAMER_HOPS = ROUTINE_BEATS * 2; // one hop per half beat
+const walkableList = Array.from(walkable).map(k => {
+  const [bx, by] = k.split(',').map(Number);
+  return { bx, by };
+});
+
+function makeWalk(seed: number, start: { bx: number; by: number }) {
+  const rand = mulberry32(seed);
+  const path: { bx: number; by: number }[] = [start];
+  let cur = start;
   let prev: { bx: number; by: number } | null = null;
-  roamerPath.push(cur);
-  for (let i = 0; i < ROUTINE_BEATS; i++) {
+  for (let i = 0; i < ROAMER_HOPS; i++) {
     const neighbors = [
       { bx: cur.bx + 1, by: cur.by },
       { bx: cur.bx - 1, by: cur.by },
@@ -143,36 +155,45 @@ const roamerPath: { bx: number; by: number }[] = [];
     let options = neighbors.filter(b => !prev || b.bx !== prev.bx || b.by !== prev.by);
     if (options.length === 0) options = neighbors;
     const next = options[Math.floor(rand() * options.length)];
-    roamerPath.push(next);
+    path.push(next);
     prev = cur;
     cur = next;
   }
+  return path;
 }
 
-// The walk as a CSS keyframes rule: one stop per beat, discrete hops via
+const startPicker = mulberry32(ROAMER_SEED * 31 + 7);
+const roamerPaths = ROAMER_COLORS.map((_, i) => {
+  const start = i === 0
+    ? blockOf(NOSE_BRIDGE_X, NOSE_BRIDGE_Y)
+    : walkableList[Math.floor(startPicker() * walkableList.length)];
+  return makeWalk(ROAMER_SEED + i * 7919, start);
+});
+
+// The walks as CSS keyframes: one stop per half beat, discrete hops via
 // steps(1, end). Injected as a global style because Astro scopes keyframe
 // names inside its scoped <style> blocks.
 const BLOCK_PX = PIXEL_SIZE * 2;
-const roamerStops = roamerPath
-  .map((b, i) => {
-    const pct = ((i / (roamerPath.length - 1)) * 100).toFixed(2);
-    return `${pct}% { transform: translate(${b.bx * BLOCK_PX}px, ${b.by * BLOCK_PX}px); }`;
-  })
-  .join('\n  ');
-
 const roamerCss = `
-@keyframes jimnist-roam {
-  ${roamerStops}
-}
-#rave-roamer {
+${roamerPaths
+  .map((path, i) => {
+    const stops = path
+      .map((b, j) => {
+        const pct = ((j / (path.length - 1)) * 100).toFixed(2);
+        return `${pct}% { transform: translate(${b.bx * BLOCK_PX}px, ${b.by * BLOCK_PX}px); }`;
+      })
+      .join('\n  ');
+    return `@keyframes jimnist-roam-${i} {\n  ${stops}\n}\n#smiley-svg.dancing #rave-roamer-${i} {\n  animation: jimnist-roam-${i} ${ROUTINE_MS}ms steps(1, end) both;\n}`;
+  })
+  .join('\n')}
+.rave-roamer {
   visibility: hidden;
 }
-#smiley-svg.dancing #rave-roamer {
+#smiley-svg.dancing .rave-roamer {
   visibility: visible;
-  animation: jimnist-roam ${ROUTINE_MS}ms steps(1, end) both;
 }
 @media (prefers-reduced-motion: reduce) {
-  #smiley-svg.dancing #rave-roamer {
+  #smiley-svg.dancing .rave-roamer {
     visibility: hidden;
   }
 }
@@ -261,19 +282,22 @@ const rightBorders = getBorders(rights, rightSet);
       />
     ))}
 
-    <!-- The roamer: one 2x2 block that random-walks the mosaic on the
-         beat while dancing (path precomputed at build time - see the
-         injected jimnist-roam keyframes). Drawn before the border lines
-         so the grid renders over it, and before the eyes and signature
-         so it passes behind them. -->
-    <rect
-      id="rave-roamer"
-      x="0"
-      y="0"
-      width={PIXEL_SIZE * 2}
-      height={PIXEL_SIZE * 2}
-      fill={ROAMER_COLOR}
-    />
+    <!-- The roamers: 2x2 blocks that random-walk the mosaic on the
+         half-beat while dancing (paths precomputed at build time - see
+         the injected jimnist-roam keyframes). Drawn before the border
+         lines so the grid renders over them, and before the eyes and
+         signature so they pass behind them. -->
+    {ROAMER_COLORS.map((c, i) => (
+      <rect
+        id={`rave-roamer-${i}`}
+        class="rave-roamer"
+        x="0"
+        y="0"
+        width={PIXEL_SIZE * 2}
+        height={PIXEL_SIZE * 2}
+        fill={c}
+      />
+    ))}
 
     <!-- Face borders -->
     {yellowBorders.map(l => (

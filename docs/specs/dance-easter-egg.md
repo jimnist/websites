@@ -17,27 +17,32 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 
 ## The dance
 
-- **A random mosaic plus one roamer.** When the dance starts, the face
-  snaps into a random neon **mosaic**: one palette color per 2x2 block
-  (hashed from block coordinates at build time), static for the whole
-  routine. The motion is the **roamer** - a single 2x2 block of a distinct
-  color (`ROAMER_COLOR`, white) that random-walks across the face, hopping
-  to an adjacent walkable block on every beat (~130 BPM, discrete
-  `steps()` hops, no sliding). The walk starts on the nose-bridge block,
-  avoids immediate backtracks, and only visits blocks whose four cells are
-  all face pixels - so it never covers the eyes, and it passes behind the
-  grid lines, eyes, and signature (SVG paint order). The walk is a seeded
-  build-time random walk (`ROAMER_SEED`), so it is random-looking but
-  identical on every trigger; change the seed to reroll it.
+- **A random mosaic plus a troupe of roamers.** When the dance starts, the
+  face snaps into a random neon **mosaic**: one palette color per 2x2
+  block (hashed from block coordinates at build time), static for the
+  whole routine. The motion is the **roamers** - a troupe of 2x2 blocks
+  (`ROAMER_COLORS`, five alternating white and near-black) that
+  random-walk across the face, each hopping to an adjacent walkable block
+  every half beat (discrete `steps()` hops, no sliding; ~4.3 hops/sec
+  across the troupe). The first walk starts on the nose-bridge block, the
+  rest scatter from seeded random blocks; walks avoid immediate
+  backtracks and only visit blocks whose four cells are all face pixels -
+  so they never cover the eyes, and they pass behind the grid lines,
+  eyes, and signature (SVG paint order). The walks are seeded at build
+  time (`ROAMER_SEED`), so they are random-looking but identical on every
+  trigger; change the seed to reroll them.
   The mosaic's **lightness** is per individual pixel: each square shades
   its block's color by its original grayscale value, with the pure palette
   color sitting mid-range - the darkest pixels darken it toward black (up
-  to `MAX_DARK`, 50%) and the lightest lift it toward white (up to
-  `MAX_LIFT`, 70%) - so the face's shading shows through as a neon relief.
-  (Revised 2026-07, four times: rows shifting side-to-side -> color change
+  to `MAX_DARK`, 55%) and the lightest lift it toward white (up to
+  `MAX_LIFT`, 35% - kept low because the face is mostly light and higher
+  values wash the whole mosaic out) - so the face's shading shows through
+  as a neon relief.
+  (Revised 2026-07, five times: rows shifting side-to-side -> color change
   over fixed squares -> random beat-snapped confetti -> orderly traveling
-  wave -> this: jim found the wave too orderly and chose a random static
-  mosaic with a single roaming block as the dancer.)
+  wave -> one roaming block -> this: one roamer was too inactive and the
+  70% lift too washed out, so a troupe of five roamers at double tempo
+  over a more saturated mosaic.)
 - Silent - the beat is visual only. No audio assets.
 - Palette: hot pink `#ff2d95`, cyan `#00e5ff`, electric green `#39ff14`,
   purple `#b026ff`, laser yellow `#ffe814`.
