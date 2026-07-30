@@ -17,18 +17,24 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 
 ## The dance
 
-- The face is the dancer: shape stays recognizable, pixel rows shift
-  side-to-side on a visual beat at ~130 BPM, neon color waves ripple across
-  the pixels.
+- **Nothing moves.** The dance is a neon color wave flowing across the fixed
+  squares, radiating outward from the nose bridge, paced to a visual beat at
+  ~130 BPM.
+  (Revised 2026-07: the original spec had pixel rows shifting side-to-side;
+  jim clarified the "shimmy" was always meant as color flow over fixed
+  squares, and the positional-motion version was fragile in practice.)
 - Silent - the beat is visual only. No audio assets.
-- Palette (tune hexes by eye at build time): hot pink `#ff2d95`, cyan
-  `#00e5ff`, electric green `#39ff14`, purple `#b026ff`, laser yellow
-  `#ffe814`.
-- Only pixel fills change.
+- Palette: hot pink `#ff2d95`, cyan `#00e5ff`, electric green `#39ff14`,
+  purple `#b026ff`, laser yellow `#ffe814`.
+- Only pixel colors change, and only as a CSS override: the animation is
+  pure CSS (`.dancing` class + per-pixel `animation-delay` by distance from
+  the nose bridge), so the `fill` attributes are never touched and removing
+  the class restores every original color with no bookkeeping.
   Grid borders and page background untouched.
-- The `big_jim.png` signature image sits out (no motion).
-- Choreography owns the pupils during the dance (they bop on the beat);
-  cursor tracking pauses and resumes when the routine ends.
+- The `big_jim.png` signature image and the pupils sit out; pupil cursor
+  tracking keeps working throughout.
+  (Revised 2026-07: with no positional choreography there is nothing for
+  the pupils to join.)
 
 ## Lifecycle
 
@@ -41,9 +47,9 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 
 ## Accessibility
 
-- `prefers-reduced-motion`: the calm variant - no positional motion, no beat
-  pulsing; the neon colors crossfade slowly across the still face for the
-  length of a routine.
+- `prefers-reduced-motion`: the calm variant - the same color wave at half
+  speed with gentle easing (a slow crossfade, no beat snap).
+  Handled entirely by a CSS media query.
 - Color pulses are traveling waves, never full-face strobes.
   Stay comfortably under the WCAG 3-flashes-per-second line
   (130 BPM = ~2.2 pulses/s).
