@@ -22,11 +22,12 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
   blending). The **hue** is chosen at a chunky **2x2-block resolution** -
   each block strobes as one panel with its own pseudo-random phase and one
   of two palette orders - while the **lightness** is per individual pixel:
-  each square lifts its panel's color toward white in proportion to its
-  original grayscale value (darkest pixel = pure palette color, lighter
-  pixels = pastels of the same hue, never darkened; `MAX_LIFT` caps the
-  lightest at 70%). The face's original shading shows through the strobe
-  as a neon relief. Chaos in space, unity in time.
+  each square shades its panel's color by its original grayscale value,
+  with the pure palette color sitting mid-range - the darkest pixels
+  darken it toward black (up to `MAX_DARK`, 50%) and the lightest lift it
+  toward white (up to `MAX_LIFT`, 70%). The face's original shading shows
+  through the strobe as a full-contrast neon relief. Chaos in space,
+  unity in time.
   (Revised 2026-07: the original spec had pixel rows shifting side-to-side;
   jim clarified the "shimmy" was always meant as color change over fixed
   squares, then chose random beat-snapped confetti over an orderly radial
@@ -44,9 +45,9 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
   keeps working throughout.
   (Revised 2026-07: with no positional choreography there is nothing for
   the pupils to join.)
-- The `big_jim.png` signature turns pure black for the duration of the
-  dance (CSS `filter: brightness(0)`) so it holds up against the neon; it
-  reverts with everything else when the class drops.
+- The `big_jim.png` signature keeps its original color throughout.
+  (Revised 2026-07: an earlier iteration turned it black during the dance;
+  jim preferred it unchanged.)
 
 ## Lifecycle
 

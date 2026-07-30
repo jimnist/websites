@@ -58,9 +58,9 @@ function raveTrack(gx: number, gy: number): string {
 // Per-pixel shading: the dance preserves the face's original light/dark
 // structure as a neon relief. The hue is chosen per 2x2 block (chunky
 // panels), but each individual square's lightness comes from its own
-// original pixel: the darkest pixel shows the pure palette color and
-// lighter pixels are lifted toward white (never darkened), so the face's
-// full-resolution texture shows through the panels.
+// original pixel. The palette color sits in the middle of the range:
+// the darkest pixels push it toward black, the lightest toward white,
+// so the face's full-resolution depth shows through the panels.
 function hexLuma(hex: string): number {
   const h = hex.length === 4
     ? hex.slice(1).split('').map(c => c + c).join('')
@@ -75,12 +75,19 @@ const faceLumas = yellows.map(p => hexLuma(p.c));
 const lumaMin = Math.min(...faceLumas);
 const lumaMax = Math.max(...faceLumas);
 
+const MAX_DARK = 50; // % toward black for the darkest pixel - tune by eye
 const MAX_LIFT = 70; // % toward white for the lightest pixel - tune by eye
 
-function raveLift(originalColor: string): string {
+// Maps a pixel's original grayscale value onto the shading range:
+// lumaMin -> MAX_DARK% toward black, mid -> pure palette color,
+// lumaMax -> MAX_LIFT% toward white. Exactly one of the two vars is 0%.
+function raveShadeVars(originalColor: string): string {
   const luma = hexLuma(originalColor);
   const t = lumaMax > lumaMin ? (luma - lumaMin) / (lumaMax - lumaMin) : 0;
-  return `${Math.round(t * MAX_LIFT)}%`;
+  const shade = t * (MAX_DARK + MAX_LIFT) - MAX_DARK; // -MAX_DARK..+MAX_LIFT
+  const dark = Math.round(Math.max(0, -shade));
+  const light = Math.round(Math.max(0, shade));
+  return `--rave-dark: ${dark}%; --rave-light: ${light}%`;
 }
 
 // Build pixel set for border calculation
@@ -157,7 +164,7 @@ const rightBorders = getBorders(rights, rightSet);
     {yellows.map(p => (
       <rect
         class={`pixel ${raveTrack(p.x, p.y)}`}
-        style={`--rave-phase: ${ravePhase(p.x, p.y)}; --rave-lift: ${raveLift(p.c)}`}
+        style={`--rave-phase: ${ravePhase(p.x, p.y)}; ${raveShadeVars(p.c)}`}
         x={p.x * PIXEL_SIZE}
         y={p.y * PIXEL_SIZE}
         width={PIXEL_SIZE}
@@ -446,29 +453,30 @@ const rightBorders = getBorders(rights, rightSet);
      lands, so the strobe hits the whole face instantly. CSS `fill`
      overrides the SVG fill attribute, so removing the class restores
      every original color with no bookkeeping. */
-  /* Each keyframe lifts the palette color toward white by the pixel's own
-     --rave-lift (from its original grayscale value, set at build time), so
-     the face's light/dark texture shows through the neon: darkest pixels
-     get the pure palette color, lighter ones a pastel of the same hue.
+  /* Each keyframe shades the palette color by the pixel's own build-time
+     vars (from its original grayscale value): darkened toward black for
+     the darkest pixels, lifted toward white for the lightest - exactly one
+     of --rave-dark / --rave-light is nonzero per pixel. The face's
+     light/dark texture shows through the neon with full contrast.
      var() inside keyframes resolves per animating element. */
   @keyframes jimnist-rave-a {
-    0%   { fill: color-mix(in srgb, #ff2d95, white var(--rave-lift, 0%)); } /* hot pink */
-    20%  { fill: color-mix(in srgb, #00e5ff, white var(--rave-lift, 0%)); } /* cyan */
-    40%  { fill: color-mix(in srgb, #39ff14, white var(--rave-lift, 0%)); } /* electric green */
-    60%  { fill: color-mix(in srgb, #b026ff, white var(--rave-lift, 0%)); } /* purple */
-    80%  { fill: color-mix(in srgb, #ffe814, white var(--rave-lift, 0%)); } /* laser yellow */
-    100% { fill: color-mix(in srgb, #ff2d95, white var(--rave-lift, 0%)); }
+    0%   { fill: color-mix(in srgb, color-mix(in srgb, #ff2d95, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* hot pink */
+    20%  { fill: color-mix(in srgb, color-mix(in srgb, #00e5ff, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* cyan */
+    40%  { fill: color-mix(in srgb, color-mix(in srgb, #39ff14, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* electric green */
+    60%  { fill: color-mix(in srgb, color-mix(in srgb, #b026ff, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* purple */
+    80%  { fill: color-mix(in srgb, color-mix(in srgb, #ffe814, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* laser yellow */
+    100% { fill: color-mix(in srgb, color-mix(in srgb, #ff2d95, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); }
   }
 
   /* Second palette order, offset so a same-phase pixel on the other track
      never shows the same color at the same time. */
   @keyframes jimnist-rave-b {
-    0%   { fill: color-mix(in srgb, #39ff14, white var(--rave-lift, 0%)); } /* electric green */
-    20%  { fill: color-mix(in srgb, #ffe814, white var(--rave-lift, 0%)); } /* laser yellow */
-    40%  { fill: color-mix(in srgb, #b026ff, white var(--rave-lift, 0%)); } /* purple */
-    60%  { fill: color-mix(in srgb, #ff2d95, white var(--rave-lift, 0%)); } /* hot pink */
-    80%  { fill: color-mix(in srgb, #00e5ff, white var(--rave-lift, 0%)); } /* cyan */
-    100% { fill: color-mix(in srgb, #39ff14, white var(--rave-lift, 0%)); }
+    0%   { fill: color-mix(in srgb, color-mix(in srgb, #39ff14, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* electric green */
+    20%  { fill: color-mix(in srgb, color-mix(in srgb, #ffe814, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* laser yellow */
+    40%  { fill: color-mix(in srgb, color-mix(in srgb, #b026ff, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* purple */
+    60%  { fill: color-mix(in srgb, color-mix(in srgb, #ff2d95, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* hot pink */
+    80%  { fill: color-mix(in srgb, color-mix(in srgb, #00e5ff, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); } /* cyan */
+    100% { fill: color-mix(in srgb, color-mix(in srgb, #39ff14, black var(--rave-dark, 0%)), white var(--rave-light, 0%)); }
   }
 
   /* Only squares carrying a rave track animate - the eye whites have no
@@ -481,12 +489,6 @@ const rightBorders = getBorders(rights, rightSet);
 
   #smiley-svg.dancing .rave-b {
     animation-name: jimnist-rave-b;
-  }
-
-  /* The signature PNG goes pure black for the duration of the dance so it
-     holds up against the neon. brightness(0) crushes every opaque pixel. */
-  #smiley-svg.dancing image {
-    filter: brightness(0);
   }
 
   /* Calm variant: under prefers-reduced-motion the colors still cycle, but
