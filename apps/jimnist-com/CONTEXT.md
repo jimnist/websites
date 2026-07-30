@@ -37,11 +37,13 @@ _Avoid_: hover (a plain hover does not trigger anything)
 
 **Dance**:
 The easter-egg state the icon enters after a dwell: beat-locked neon
-confetti, DDR-style - every square snaps to a new random palette color
-exactly on the beat, with no blending, like an arcade cabinet's flashing
-panels. Nothing ever moves - the squares stay put and only their colors
-change. Silent. Pupil cursor tracking keeps working; the signature image
-sits out. When the dance ends the face returns exactly to normal.
+confetti, DDR-style - the face snaps to new random palette colors exactly
+on the beat, with no blending, at a chunky 2x2-block resolution, like an
+arcade cabinet's flashing panels. Nothing ever moves - the squares stay
+put and only their colors change. Silent. The eye whites sit out so the
+eyes stay readable; pupil cursor tracking keeps working; the signature
+turns black for the duration. When the dance ends the face returns exactly
+to normal.
 _Avoid_: shimmy (retired - early design had rows moving; the dance is color
 change only), wave (retired - an orderly radial ripple was replaced by
 random confetti), rave, disco mode, animation (too generic)

@@ -17,11 +17,12 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 
 ## The dance
 
-- **Nothing moves.** The dance is beat-locked neon confetti: every square
-  snaps to a new color exactly on the beat (~130 BPM, hard `steps()` cuts,
-  no blending), but each square follows its own pseudo-random phase and one
-  of two palette orders - chaos in space, unity in time, like the flashing
-  panels of a real DDR cabinet.
+- **Nothing moves.** The dance is beat-locked neon confetti: the face snaps
+  to new colors exactly on the beat (~130 BPM, hard `steps()` cuts, no
+  blending) at a chunky **2x2-block resolution** - each 2x2 block of squares
+  strobes as one panel, with its own pseudo-random phase and one of two
+  palette orders. Chaos in space, unity in time, like the flashing panels
+  of a real DDR cabinet.
   (Revised 2026-07: the original spec had pixel rows shifting side-to-side;
   jim clarified the "shimmy" was always meant as color change over fixed
   squares, then chose random beat-snapped confetti over an orderly radial
@@ -34,10 +35,14 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
   coordinates at build time), so the `fill` attributes are never touched
   and removing the class restores every original color with no bookkeeping.
   Grid borders and page background untouched.
-- The `big_jim.png` signature image and the pupils sit out; pupil cursor
-  tracking keeps working throughout.
+- The eye whites sit out entirely (no animation), so the eyes stay readable
+  through the confetti; the pupils sit out too, and pupil cursor tracking
+  keeps working throughout.
   (Revised 2026-07: with no positional choreography there is nothing for
   the pupils to join.)
+- The `big_jim.png` signature turns pure black for the duration of the
+  dance (CSS `filter: brightness(0)`) so it holds up against the neon; it
+  reverts with everything else when the class drops.
 
 ## Lifecycle
 
