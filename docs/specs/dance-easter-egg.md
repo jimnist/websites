@@ -19,10 +19,14 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 
 - **Nothing moves.** The dance is beat-locked neon confetti: the face snaps
   to new colors exactly on the beat (~130 BPM, hard `steps()` cuts, no
-  blending) at a chunky **2x2-block resolution** - each 2x2 block of squares
-  strobes as one panel, with its own pseudo-random phase and one of two
-  palette orders. Chaos in space, unity in time, like the flashing panels
-  of a real DDR cabinet.
+  blending). The **hue** is chosen at a chunky **2x2-block resolution** -
+  each block strobes as one panel with its own pseudo-random phase and one
+  of two palette orders - while the **lightness** is per individual pixel:
+  each square lifts its panel's color toward white in proportion to its
+  original grayscale value (darkest pixel = pure palette color, lighter
+  pixels = pastels of the same hue, never darkened; `MAX_LIFT` caps the
+  lightest at 70%). The face's original shading shows through the strobe
+  as a neon relief. Chaos in space, unity in time.
   (Revised 2026-07: the original spec had pixel rows shifting side-to-side;
   jim clarified the "shimmy" was always meant as color change over fixed
   squares, then chose random beat-snapped confetti over an orderly radial
