@@ -18,10 +18,12 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 ## The dance
 
 - **A random mosaic plus a troupe of green roamers.** When the dance
-  starts, the face snaps into a random neon **mosaic** laid out in every
-  palette color EXCEPT electric green: one of pink/cyan/purple/yellow per
-  2x2 block (hashed from block coordinates at build time), static for the
-  whole routine. The motion is the **roamers** - five 2x2 blocks, all
+  starts, the face snaps into a random neon **mosaic** of hot pink, cyan,
+  and purple - one per 2x2 block (hashed from block coordinates at build
+  time), static for the whole routine. Electric green is reserved for the
+  roamers, and laser yellow is banned from the floor entirely: a yellow
+  block over the already-yellow face reads as a pixel that never joined
+  the dance. The motion is the **roamers** - five 2x2 blocks, all
   electric green (`ROAMER_COLOR`), the only green anywhere - that
   random-walk across the face, each hopping to an adjacent walkable block
   every half beat (discrete `steps()` hops, no sliding; ~4.3 hops/sec

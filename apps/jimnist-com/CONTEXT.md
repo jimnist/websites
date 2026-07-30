@@ -37,7 +37,8 @@ _Avoid_: hover (a plain hover does not trigger anything)
 
 **Dance**:
 The easter-egg state the icon enters after a dwell: the face snaps into a
-static random neon mosaic (one green-free palette color per 2x2 block,
+static random neon mosaic (hot pink, cyan, or purple per 2x2 block -
+green is the roamers' and yellow reads as not-dancing against the face -
 shaded per pixel by its original grayscale value so the face reads as a
 neon relief), and the green roamers dance across it. Silent. The eye whites sit out so the
 eyes stay readable; pupil cursor tracking keeps working; the signature

@@ -31,10 +31,10 @@ const BEAT_MS = 60000 / BPM; // ~461.5ms
 const ROUTINE_BEATS = 16; // 4 bars x 4 beats
 const ROUTINE_MS = Math.round(BEAT_MS * ROUTINE_BEATS); // ~7.4s
 
-// The mosaic lays out in every neon EXCEPT green - green is reserved for
-// the roamers, so the dancers always pop against the floor with no chance
-// of camouflage.
-const MOSAIC_PALETTE = ['#ff2d95', '#00e5ff', '#b026ff', '#ffe814'];
+// The mosaic floor: hot pink, cyan, purple. Green is reserved for the
+// roamers (no camouflage), and laser yellow is out because a yellow block
+// over the already-yellow face reads as "not dancing at all".
+const MOSAIC_PALETTE = ['#ff2d95', '#00e5ff', '#b026ff'];
 const ROAMER_COLOR = '#39ff14'; // electric green - the dancers' color
 const ROAMER_COUNT = 5;
 const ROAMER_SEED = 20260730; // deterministic walks; change to reroll them
