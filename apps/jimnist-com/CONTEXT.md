@@ -37,19 +37,20 @@ _Avoid_: hover (a plain hover does not trigger anything)
 
 **Dance**:
 The easter-egg state the icon enters after a dwell: the face snaps into a
-static random neon mosaic (one palette color per 2x2 block, shaded per
-pixel by its original grayscale value so the face reads as a neon relief),
-and the roamers dance across it. Silent. The eye whites sit out so the
+static random neon mosaic (one green-free palette color per 2x2 block,
+shaded per pixel by its original grayscale value so the face reads as a
+neon relief), and the green roamers dance across it. Silent. The eye whites sit out so the
 eyes stay readable; pupil cursor tracking keeps working; the signature
 keeps its original color. When the dance ends the face returns exactly to
 normal.
 
 **Roamers**:
-The dance's troupe: five 2x2 blocks (alternating white and near-black)
-that random-walk the mosaic, each hopping to an adjacent walkable block
-every half beat. The first starts on the nose-bridge block, the rest
-scatter; they never cover the eyes, and pass behind the grid lines, eyes,
-and signature. Their walks are seeded at build time - random-looking,
+The dance's troupe: five 2x2 blocks, all electric green - the one palette
+color the mosaic never uses, so they can never camouflage - that
+random-walk the mosaic, each hopping to an adjacent walkable block every
+half beat. The first starts on the nose-bridge block, the rest scatter;
+they never cover the eyes, and pass behind the grid lines, eyes, and
+signature. Their walks are seeded at build time - random-looking,
 identical every trigger.
 _Avoid_: cursor (that's the user's pointer), sprites (nothing moves but
 their block positions)

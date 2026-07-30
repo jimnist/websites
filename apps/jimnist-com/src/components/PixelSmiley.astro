@@ -31,11 +31,12 @@ const BEAT_MS = 60000 / BPM; // ~461.5ms
 const ROUTINE_BEATS = 16; // 4 bars x 4 beats
 const ROUTINE_MS = Math.round(BEAT_MS * ROUTINE_BEATS); // ~7.4s
 
-const NEON_PALETTE = ['#ff2d95', '#00e5ff', '#39ff14', '#b026ff', '#ffe814'];
-// The roaming dancers: one 2x2 block each, alternating bright and dark so
-// they pop against the mosaic either way. Add/remove entries to change the
-// troupe size.
-const ROAMER_COLORS = ['#ffffff', '#111111', '#ffffff', '#111111', '#ffffff'];
+// The mosaic lays out in every neon EXCEPT green - green is reserved for
+// the roamers, so the dancers always pop against the floor with no chance
+// of camouflage.
+const MOSAIC_PALETTE = ['#ff2d95', '#00e5ff', '#b026ff', '#ffe814'];
+const ROAMER_COLOR = '#39ff14'; // electric green - the dancers' color
+const ROAMER_COUNT = 5;
 const ROAMER_SEED = 20260730; // deterministic walks; change to reroll them
 
 // Deterministic per-block randomness for the mosaic (GLSL-style sin hash -
@@ -67,10 +68,13 @@ const faceLumas = yellows.map(p => hexLuma(p.c));
 const lumaMin = Math.min(...faceLumas);
 const lumaMax = Math.max(...faceLumas);
 
-const MAX_DARK = 55; // % toward black for the darkest pixel - tune by eye
-const MAX_LIFT = 35; // % toward white for the lightest pixel - tune by eye
-// (Most of the face is light, so MAX_LIFT dominates the overall look -
-// keep it low or the whole mosaic washes out toward pastel.)
+const MAX_DARK = 60; // % toward black for the darkest pixel - tune by eye
+const MAX_LIFT = 45; // % toward white for the lightest pixel - tune by eye
+// Most face pixels cluster in the light range, so a linear map compresses
+// them into near-identical shades. The gamma bends the curve to spread
+// the light pixels apart (raise for more separation among lights, and a
+// darker overall mosaic; 1 = linear).
+const SHADE_GAMMA = 2;
 
 // Channel-wise mix of a hex color toward a target (t in 0..1).
 function mixHex(hex: string, target: [number, number, number], t: number): string {
@@ -88,10 +92,11 @@ function mixHex(hex: string, target: [number, number, number], t: number): strin
 // pick, shaded by the pixel's own original grayscale value.
 function mosaicColor(gx: number, gy: number, originalColor: string): string {
   const { bx, by } = blockOf(gx, gy);
-  const base = NEON_PALETTE[Math.floor(blockHash(bx, by) * NEON_PALETTE.length)];
+  const base = MOSAIC_PALETTE[Math.floor(blockHash(bx, by) * MOSAIC_PALETTE.length)];
   const luma = hexLuma(originalColor);
   const t = lumaMax > lumaMin ? (luma - lumaMin) / (lumaMax - lumaMin) : 0;
-  const shade = t * (MAX_DARK + MAX_LIFT) - MAX_DARK; // -MAX_DARK..+MAX_LIFT
+  const curved = Math.pow(t, SHADE_GAMMA);
+  const shade = curved * (MAX_DARK + MAX_LIFT) - MAX_DARK; // -MAX_DARK..+MAX_LIFT
   return shade < 0
     ? mixHex(base, [0, 0, 0], -shade / 100)
     : mixHex(base, [255, 255, 255], shade / 100);
@@ -163,7 +168,7 @@ function makeWalk(seed: number, start: { bx: number; by: number }) {
 }
 
 const startPicker = mulberry32(ROAMER_SEED * 31 + 7);
-const roamerPaths = ROAMER_COLORS.map((_, i) => {
+const roamerPaths = Array.from({ length: ROAMER_COUNT }, (_, i) => {
   const start = i === 0
     ? blockOf(NOSE_BRIDGE_X, NOSE_BRIDGE_Y)
     : walkableList[Math.floor(startPicker() * walkableList.length)];
@@ -287,7 +292,7 @@ const rightBorders = getBorders(rights, rightSet);
          the injected jimnist-roam keyframes). Drawn before the border
          lines so the grid renders over them, and before the eyes and
          signature so they pass behind them. -->
-    {ROAMER_COLORS.map((c, i) => (
+    {roamerPaths.map((_, i) => (
       <rect
         id={`rave-roamer-${i}`}
         class="rave-roamer"
@@ -295,7 +300,7 @@ const rightBorders = getBorders(rights, rightSet);
         y="0"
         width={PIXEL_SIZE * 2}
         height={PIXEL_SIZE * 2}
-        fill={c}
+        fill={ROAMER_COLOR}
       />
     ))}
 
