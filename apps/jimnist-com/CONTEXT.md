@@ -36,13 +36,15 @@ it. The only way to start the dance.
 _Avoid_: hover (a plain hover does not trigger anything)
 
 **Dance**:
-The easter-egg state the icon enters after a dwell: a neon color wave flows
-across the fixed squares, radiating outward from the nose bridge on a visual
-beat, DDR-style. Nothing ever moves - the squares stay put and only their
-colors change. Silent. Pupil cursor tracking keeps working; the signature
-image sits out. When the dance ends the face returns exactly to normal.
+The easter-egg state the icon enters after a dwell: beat-locked neon
+confetti, DDR-style - every square snaps to a new random palette color
+exactly on the beat, with no blending, like an arcade cabinet's flashing
+panels. Nothing ever moves - the squares stay put and only their colors
+change. Silent. Pupil cursor tracking keeps working; the signature image
+sits out. When the dance ends the face returns exactly to normal.
 _Avoid_: shimmy (retired - early design had rows moving; the dance is color
-flow only), rave, disco mode, animation (too generic)
+change only), wave (retired - an orderly radial ripple was replaced by
+random confetti), rave, disco mode, animation (too generic)
 
 **Routine**:
 The fixed choreographed performance one dance plays: about 8 seconds, then the
@@ -51,8 +53,9 @@ requires leaving the nose bridge and dwelling again.
 _Avoid_: loop (a routine never repeats by itself)
 
 **Calm variant**:
-The dance as experienced under `prefers-reduced-motion`: the same color wave
-at half speed with gentle easing - a slow crossfade instead of a beat snap.
+The dance as experienced under `prefers-reduced-motion`: the same confetti
+colors at half speed with gentle easing - a slow crossfade instead of a
+beat snap.
 _Avoid_: disabled mode (the egg still works; only the tempo softens)
 
 <Grow this via /grill-with-docs + the domain-modeling skill; don't try to fill

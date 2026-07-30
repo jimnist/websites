@@ -17,19 +17,22 @@ Pixel data: `apps/jimnist-com/src/data/pixels.ts`.
 
 ## The dance
 
-- **Nothing moves.** The dance is a neon color wave flowing across the fixed
-  squares, radiating outward from the nose bridge, paced to a visual beat at
-  ~130 BPM.
+- **Nothing moves.** The dance is beat-locked neon confetti: every square
+  snaps to a new color exactly on the beat (~130 BPM, hard `steps()` cuts,
+  no blending), but each square follows its own pseudo-random phase and one
+  of two palette orders - chaos in space, unity in time, like the flashing
+  panels of a real DDR cabinet.
   (Revised 2026-07: the original spec had pixel rows shifting side-to-side;
-  jim clarified the "shimmy" was always meant as color flow over fixed
-  squares, and the positional-motion version was fragile in practice.)
+  jim clarified the "shimmy" was always meant as color change over fixed
+  squares, then chose random beat-snapped confetti over an orderly radial
+  wave to match the arcade feel.)
 - Silent - the beat is visual only. No audio assets.
 - Palette: hot pink `#ff2d95`, cyan `#00e5ff`, electric green `#39ff14`,
   purple `#b026ff`, laser yellow `#ffe814`.
 - Only pixel colors change, and only as a CSS override: the animation is
-  pure CSS (`.dancing` class + per-pixel `animation-delay` by distance from
-  the nose bridge), so the `fill` attributes are never touched and removing
-  the class restores every original color with no bookkeeping.
+  pure CSS (`.dancing` class + per-pixel random beat phase hashed from grid
+  coordinates at build time), so the `fill` attributes are never touched
+  and removing the class restores every original color with no bookkeeping.
   Grid borders and page background untouched.
 - The `big_jim.png` signature image and the pupils sit out; pupil cursor
   tracking keeps working throughout.

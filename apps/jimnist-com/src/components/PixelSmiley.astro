@@ -19,21 +19,35 @@ const RIGHT_EYE_Y = 6;
 const NOSE_BRIDGE_X = 9;
 const NOSE_BRIDGE_Y = 7;
 
-// Dance timing. The dance is a neon color wave flowing across the fixed
-// squares - nothing ever moves. It is implemented entirely in CSS: each
-// pixel's animation is delayed in proportion to its distance from the nose
-// bridge, so the wave ripples outward from the trigger point. The client
-// script only toggles the `dancing` class on and off.
+// Dance timing. The dance recolors the fixed squares DDR-style - nothing
+// ever moves. It is implemented entirely in CSS: while the `dancing` class
+// is set, every pixel snaps between neon colors exactly on the beat
+// (steps() timing), but each pixel gets a pseudo-random phase offset and
+// one of two palette orders, so the face strobes as beat-locked confetti
+// rather than an orderly gradient - like the flashing panels of an arcade
+// cabinet. The client script only toggles the class on and off.
 const BPM = 130;
 const BEAT_MS = 60000 / BPM; // ~461.5ms
 const ROUTINE_MS = Math.round(BEAT_MS * 16); // 4 bars x 4 beats, ~7.4s
 const WAVE_CYCLE_MS = Math.round(BEAT_MS * 5); // one beat per palette color
-const DELAY_PER_CELL_MS = Math.round(BEAT_MS * 0.35); // wave-front speed
 
-// Per-pixel wave delay, from grid distance to the nose bridge.
-function waveDelay(gx: number, gy: number): string {
-  const dist = Math.hypot(gx - NOSE_BRIDGE_X, gy - NOSE_BRIDGE_Y);
-  return `${Math.round(dist * DELAY_PER_CELL_MS)}ms`;
+// Deterministic per-pixel randomness, hashed from grid coordinates at build
+// time (GLSL-style sin hash - scatters well, no visible diagonals).
+function pixelHash(gx: number, gy: number): number {
+  const h = Math.sin(gx * 127.1 + gy * 311.7) * 43758.5453;
+  return h - Math.floor(h); // 0..1
+}
+
+// Random phase, quantized to whole beats so every pixel still snaps in sync
+// with the beat grid - chaos in space, unity in time.
+function ravePhase(gx: number, gy: number): string {
+  const beats = Math.floor(pixelHash(gx, gy) * 5); // 0..4 beats
+  return `${Math.round(beats * BEAT_MS)}ms`;
+}
+
+// Which of the two palette orders this pixel follows.
+function raveTrack(gx: number, gy: number): string {
+  return pixelHash(gx + 57, gy + 23) < 0.5 ? 'rave-a' : 'rave-b';
 }
 
 // Build pixel set for border calculation
@@ -105,12 +119,12 @@ const rightBorders = getBorders(rights, rightSet);
     data-routine-ms={ROUTINE_MS}
   >
     <!-- Face pixels (no stroke). The squares never move; the dance only
-         layers a CSS fill animation over them, offset per pixel so the
-         neon wave flows outward from the nose bridge. -->
+         layers a CSS fill animation over them, with a per-pixel random
+         beat phase and palette order for the DDR confetti-strobe look. -->
     {yellows.map(p => (
       <rect
-        class="pixel"
-        style={`--wave-delay: ${waveDelay(p.x, p.y)}`}
+        class={`pixel ${raveTrack(p.x, p.y)}`}
+        style={`--rave-phase: ${ravePhase(p.x, p.y)}`}
         x={p.x * PIXEL_SIZE}
         y={p.y * PIXEL_SIZE}
         width={PIXEL_SIZE}
@@ -134,8 +148,8 @@ const rightBorders = getBorders(rights, rightSet);
     <g id="left-eye" transform={`translate(${LEFT_EYE_X * PIXEL_SIZE}, ${LEFT_EYE_Y * PIXEL_SIZE})`}>
       {lefts.map(p => (
         <rect
-          class="pixel"
-          style={`--wave-delay: ${waveDelay(LEFT_EYE_X + p.x, LEFT_EYE_Y + p.y)}`}
+          class={`pixel ${raveTrack(LEFT_EYE_X + p.x, LEFT_EYE_Y + p.y)}`}
+          style={`--rave-phase: ${ravePhase(LEFT_EYE_X + p.x, LEFT_EYE_Y + p.y)}`}
           x={p.x * PIXEL_SIZE}
           y={p.y * PIXEL_SIZE}
           width={PIXEL_SIZE}
@@ -168,8 +182,8 @@ const rightBorders = getBorders(rights, rightSet);
     <g id="right-eye" transform={`translate(${RIGHT_EYE_X * PIXEL_SIZE}, ${RIGHT_EYE_Y * PIXEL_SIZE})`}>
       {rights.map(p => (
         <rect
-          class="pixel"
-          style={`--wave-delay: ${waveDelay(RIGHT_EYE_X + p.x, RIGHT_EYE_Y + p.y)}`}
+          class={`pixel ${raveTrack(RIGHT_EYE_X + p.x, RIGHT_EYE_Y + p.y)}`}
+          style={`--rave-phase: ${ravePhase(RIGHT_EYE_X + p.x, RIGHT_EYE_Y + p.y)}`}
           x={p.x * PIXEL_SIZE}
           y={p.y * PIXEL_SIZE}
           width={PIXEL_SIZE}
@@ -386,13 +400,18 @@ const rightBorders = getBorders(rights, rightSet);
     user-select: none;
   }
 
-  /* The dance: a neon color wave flowing across the fixed squares.
-     While `dancing` is set, each pixel cycles through the DDR palette;
-     the per-pixel --wave-delay (distance from the nose bridge, set at
-     build time) makes the wave ripple outward from the trigger point.
-     CSS `fill` overrides the SVG fill attribute, so removing the class
-     restores every original color with no bookkeeping. */
-  @keyframes jimnist-rave {
+  /* The dance: DDR-style beat-locked confetti across the fixed squares.
+     While `dancing` is set, every pixel snaps between the neon colors
+     exactly on the beat - steps() holds each color for a full beat, then
+     cuts with no blend, like an arcade cabinet's flashing panels. Each
+     pixel's --rave-phase (a random whole number of beats, hashed from its
+     coordinates at build time) plus one of two palette orders scatters the
+     colors so neighbors rarely match: chaos in space, unity in time.
+     Negative delay = every pixel is already mid-cycle when the class
+     lands, so the strobe hits the whole face instantly. CSS `fill`
+     overrides the SVG fill attribute, so removing the class restores
+     every original color with no bookkeeping. */
+  @keyframes jimnist-rave-a {
     0%   { fill: #ff2d95; } /* hot pink */
     20%  { fill: #00e5ff; } /* cyan */
     40%  { fill: #39ff14; } /* electric green */
@@ -401,12 +420,27 @@ const rightBorders = getBorders(rights, rightSet);
     100% { fill: #ff2d95; }
   }
 
-  #smiley-svg.dancing .pixel {
-    animation: jimnist-rave var(--waveCycle) linear infinite;
-    animation-delay: var(--wave-delay, 0ms);
+  /* Second palette order, offset so a same-phase pixel on the other track
+     never shows the same color at the same time. */
+  @keyframes jimnist-rave-b {
+    0%   { fill: #39ff14; } /* electric green */
+    20%  { fill: #ffe814; } /* laser yellow */
+    40%  { fill: #b026ff; } /* purple */
+    60%  { fill: #ff2d95; } /* hot pink */
+    80%  { fill: #00e5ff; } /* cyan */
+    100% { fill: #39ff14; }
   }
 
-  /* Calm variant: under prefers-reduced-motion the wave still flows, but
+  #smiley-svg.dancing .pixel {
+    animation: jimnist-rave-a var(--waveCycle) steps(1, end) infinite;
+    animation-delay: calc(-1 * var(--rave-phase, 0ms));
+  }
+
+  #smiley-svg.dancing .pixel.rave-b {
+    animation-name: jimnist-rave-b;
+  }
+
+  /* Calm variant: under prefers-reduced-motion the colors still cycle, but
      at half speed with gentle easing - a slow crossfade, no beat snap. */
   @media (prefers-reduced-motion: reduce) {
     #smiley-svg.dancing .pixel {
