@@ -1,0 +1,351 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Career facts are mirrored from bigbrain/jobs/generic/RESUME.md and
+// bigbrain/jobs/LINKEDIN_PROFILE.md. Those two are the source of truth - if a
+// number changes there, change it here. Nothing on this page is unverified.
+const track = [
+  {
+    org: 'Liftopia',
+    role: 'VP of Product Development',
+    years: '2016-2020',
+    body: 'Owned the pricing engine, rate rules, and product catalog behind 200+ ski resort white-label storefronts and our own marketplace. We pioneered dynamic pricing in ski. Every resort priced differently, so the rules lived in configuration and the engine evaluated them. When a resort wanted something the model could not express, we extended the model instead of special-casing the resort.',
+  },
+  {
+    org: 'Sonder',
+    role: 'Director of Engineering',
+    years: '2020-2024',
+    body: 'Joined as a Senior Engineering Manager and grew into Director, taking a small team through hyper-growth into a 25+ organization. Led in-house dynamic pricing, sonder.com, and distribution channel partnerships, owning the systems that transacted over $600M in annual bookings. Company went public in January 2022.',
+  },
+  {
+    org: 'Provide / Fifth Third Bank',
+    role: 'Director of Engineering',
+    years: '2024-2025',
+    body: 'Ran the loan origination platform. Started with lending to dental and veterinary practices, expanded to all SBA lending for a top-15 US bank. Application intake, underwriting workflow, decisioning, document handling, servicing handoffs, all under regulated audit.',
+  },
+  {
+    org: 'Yardzen',
+    role: 'VP of Technology',
+    years: '2025-2026',
+    body: 'Got AI actually shipping across engineering: Claude Code and Cursor in every workflow, LLM tools for customer communication summarization in production. Rebuilt YardAI myself as IC work, a computer vision pipeline on ComfyUI with open-source models and custom orchestration. Cut annual infrastructure and SaaS spend by $200K through consolidation.',
+  },
+  {
+    org: 'Couchsurfing',
+    role: 'VP of Engineering',
+    years: '2013-2016',
+    body: 'Brought in to rescue a platform that had failed three rebuild attempts: 46 databases, 1,000+ tables, 1.8M lines of legacy code, two hours of unplanned downtime every other day. Delivered the rebuild in seven months and had one unplanned incident in the first thirteen months after launch. Monthly AWS spend went from $160K to $24K while serving 11M+ members.',
+  },
+  {
+    org: 'hotelicopter',
+    role: 'Director of Engineering',
+    years: '2009-2011',
+    body: 'Built a hotel meta-search platform from scratch. Back-end systems integrating hotel property data and delivering real-time rates and availability through web APIs and embeddable widgets.',
+  },
+];
+
+const projects = [
+  {
+    name: 'jimtime',
+    href: 'https://github.com/jimnist/jimtime',
+    tag: 'Rust · public',
+    body: 'Tracks billable time per git repo, then pushes approved entries to Harvest. Ships a Claude Code skill alongside the CLI, so the agent I\'m already working in logs the work as it happens. I use it daily to bill real clients.',
+  },
+  {
+    name: 'ath',
+    href: null,
+    tag: 'Rust · private',
+    body: "Turns Athletic.net meet entries into seeded event sheets. Scrapes entrant lists, resolves each athlete's season-best mark through the bio API, and writes one ranked seed list per event. Happy to walk through it.",
+  },
+  {
+    name: 'Personal AI tooling',
+    href: null,
+    tag: 'ongoing',
+    body: 'MCP servers, tool definitions, agent orchestration, and eval harnesses. A finance agent, a photography workflow app for the Mac, and a job-search pipeline that runs itself on a schedule.',
+  },
+];
+---
+
+<BaseLayout
+  title="Jim Nist - software"
+  description="Jim Nist. Engineering leader in San Francisco. Pricing, catalog and rules systems, AI agents and automation. 20+ years, most of it leading the people who build it."
+  ogTitle="Jim Nist - software"
+  ogDescription="Engineering leader in San Francisco. Pricing, catalog and rules systems, AI agents and automation."
+>
+  <div class="wrap">
+    <nav class="topnav"><a href="/">&larr; jimnist</a></nav>
+
+    <header class="intro">
+      <h1>Jim Nist</h1>
+      <p class="kicker">Engineering leader, still in the code. San Francisco.</p>
+
+      <p>
+        I build software, and I build the teams that build it. Twenty years of
+        it, mostly the second one, and lately writing it again myself.
+      </p>
+      <p>
+        Pricing and rules engines are the through-line. Systems where a lot of
+        parties each need their own logic and you cannot fork the product for
+        every one of them.
+      </p>
+    </header>
+
+    <section>
+      <h2>Track record</h2>
+      <ol class="track">
+        {track.map((t) => (
+          <li>
+            <div class="head">
+              <span class="org">{t.org}</span>
+              <span class="years">{t.years}</span>
+            </div>
+            <div class="role">{t.role}</div>
+            <p>{t.body}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section>
+      <h2>Building now</h2>
+      <p class="lede">
+        Take messy real-world observation, turn it into structured data you can
+        act on, and put agent-native tooling on top.
+      </p>
+      <p>
+        Claude Code and Codex as daily drivers, with each one reviewing what the
+        other builds.
+      </p>
+      <ul class="projects">
+        {projects.map((p) => (
+          <li>
+            <div class="head">
+              <span class="name">
+                {p.href ? <a href={p.href}>{p.name}</a> : p.name}
+              </span>
+              <span class="tag">{p.tag}</span>
+            </div>
+            <p>{p.body}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="contact">
+      <h2>Get in touch</h2>
+      <p>
+        <a href="mailto:jim@jimnist.com">jim@jimnist.com</a>
+        <span class="sep">·</span>
+        <a href="https://www.linkedin.com/in/jimnist/">linkedin</a>
+        <span class="sep">·</span>
+        <a href="https://github.com/jimnist">github</a>
+      </p>
+      <p class="fine">
+        MFA from CU Boulder, painting and computer science. That combination has
+        aged well.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  :global(body) {
+    background-color: #fffcf0;
+    color: #241f16;
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 5rem;
+    line-height: 1.6;
+  }
+
+  .topnav {
+    margin-bottom: 3rem;
+    font-size: 0.9rem;
+  }
+
+  .topnav a {
+    color: #8a7f6a;
+    text-decoration: none;
+  }
+
+  .topnav a:hover {
+    color: #241f16;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 7vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .kicker {
+    margin-top: 0.6rem;
+    font-size: 1.05rem;
+    color: #8a7f6a;
+  }
+
+  .intro p + p,
+  section p + p {
+    margin-top: 1rem;
+  }
+
+  .intro p:not(.kicker) {
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  section {
+    margin-top: 3.5rem;
+  }
+
+  h2 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #8a7f6a;
+    font-weight: 700;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid #e6dfcc;
+  }
+
+  .lede {
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: #4a4234;
+  }
+
+  .track,
+  .projects {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .track > li,
+  .projects > li {
+    padding: 1.6rem 0;
+    border-bottom: 1px solid #f0e9d8;
+  }
+
+  .track > li:last-child,
+  .projects > li:last-child {
+    border-bottom: 0;
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .org,
+  .name {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .years,
+  .tag {
+    font-size: 0.8rem;
+    color: #8a7f6a;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .role {
+    font-size: 0.95rem;
+    color: #8a7f6a;
+    margin-top: 0.1rem;
+  }
+
+  .track p,
+  .projects p {
+    margin-top: 0.7rem;
+  }
+
+  .name a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 2px solid #ffd84d;
+  }
+
+  .name a:hover {
+    background-color: #ffd84d;
+  }
+
+  .contact p {
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  .contact a {
+    color: #241f16;
+    text-decoration: none;
+    border-bottom: 2px solid #ffd84d;
+  }
+
+  .contact a:hover {
+    background-color: #ffd84d;
+  }
+
+  .sep {
+    color: #cfc4ab;
+    margin: 0 0.5rem;
+  }
+
+  .fine {
+    font-size: 0.95rem !important;
+    color: #8a7f6a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(body) {
+      background-color: #17150f;
+      color: #ede6d6;
+    }
+
+    .topnav a:hover,
+    .org,
+    .name,
+    .contact a {
+      color: #ede6d6;
+    }
+
+    h2,
+    .kicker,
+    .years,
+    .tag,
+    .role,
+    .fine,
+    .topnav a {
+      color: #a2977f;
+    }
+
+    .lede {
+      color: #c9c0ac;
+    }
+
+    h2 {
+      border-bottom-color: #332f24;
+    }
+
+    .track > li,
+    .projects > li {
+      border-bottom-color: #262218;
+    }
+
+    .name a:hover,
+    .contact a:hover {
+      color: #17150f;
+    }
+  }
+</style>
