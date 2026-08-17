@@ -25,18 +25,32 @@ The opening frame is:
 That is a good sentence and it is true, but it was chosen because the Hover JD asks for exactly that.
 It narrows Jim to a pricing specialist for every other reader, and the two audiences that matter most (see below) are not asking about pricing.
 
-## 2. What the page should be instead
+## 2. What this page is actually for
 
-**Lead with the work. Demote the resume.**
+Clarified by Jim 2026-08-16, and it should govern every decision below.
 
-The audiences, in priority order, are unchanged from `bigbrain/jobs/generic/PORTFOLIO_SEQUENCE.md`:
+**This is not a pitch surface.**
+It does not get linked in outreach, and it is not where anyone learns the pricing-systems argument.
+That argument lives in the notes, the cover letter, and the LinkedIn profile, which are the documents actually doing the persuading.
 
-1. **Prospective clients**, mostly through Jen Billock's network, people who need a team to build things.
-2. **Selective job search**, senior-IC building roles and Forward Deployed Engineering.
+**Its job is the "personal website" field on job applications.**
+Someone types the URL in because a form asked for it, or because they have the resume in hand and are checking that he is real.
+They arrive already interested.
+The page has to be credible, current, and clearly his. It does not have to convert anybody.
 
-Both want the same answer to the same question: can this person take a fuzzy real-world problem, model it, and ship something that works?
-Neither is asking for a resume.
-A track record answers "has he been trusted before," which is the second question, not the first.
+**It grows over time.**
+This is a standing surface, not a campaign asset with a deadline.
+Treat every pass as incremental. No version of it has to be finished by a date.
+
+### What follows from that
+
+- **The visitor probably has the resume already.** That makes a second full copy of the work history the most redundant thing on the page, which is the real argument for compressing it in section 5. The track record is not uninteresting; this particular reader has just read it.
+- **Projects are the part that is not on the resume.** A resume bullet cannot show what the context-profile MCP server actually does. The page can. That is the whole reason to lead with them.
+- **Do not optimize for strangers discovering it.** Discovery is munibus.bingo's job per `bigbrain/jobs/generic/PORTFOLIO_SEQUENCE.md`. This page serves people who already have the name.
+- **Do not tune it to any single role.** That mistake is what produced this spec.
+
+The question a reader is really answering is still: can this person take a fuzzy real-world problem, model it, and ship something that works?
+Projects answer that. A track record answers "has he been trusted before," which they already know from the resume that sent them here.
 
 **Target order:**
 
