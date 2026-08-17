@@ -7,10 +7,15 @@ import PixelSmiley from '../components/PixelSmiley.astro';
   <PixelSmiley />
   <!-- Category links under the face. Plain text so they never compete with the
        smiley, which is the point of this page. New categories (artwork,
-       furniture) get added here as their pages land. -->
+       furniture) get added here as their pages land.
+
+       Hidden for now: /software is still being reworked. The whole nav is
+       commented out rather than just the link so the empty flex row doesn't
+       leave a gap under the smiley. Restore when /software is ready.
   <nav class="links">
     <a href="/software">software</a>
   </nav>
+  -->
 </BaseLayout>
 
 <style>
