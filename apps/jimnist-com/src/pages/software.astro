@@ -9,25 +9,25 @@ const track = [
     org: 'Yardzen',
     role: 'VP of Technology',
     years: '2025-2026',
-    body: 'Got AI actually shipping across engineering: Claude Code and Cursor in every workflow, LLM tools for customer communication summarization in production. Rebuilt YardAI myself as IC work, a computer vision pipeline on ComfyUI with open-source models and custom orchestration. Cut annual infrastructure and SaaS spend by $200K through consolidation.',
+    body: 'Drove AI transformation across product, engineering, and data: Claude Code and Cursor in every workflow, LLM tools for customer communication summarization in production. Simplified the data and reporting stack with a semantic data layer and brought in AI-enabled BI. Rebuilt YardAI myself as IC work, a computer vision pipeline on ComfyUI with open-source models and custom orchestration. Cut annual infrastructure and SaaS spend by $200K through consolidation.',
   },
   {
     org: 'Provide / Fifth Third Bank',
     role: 'Director of Engineering',
     years: '2024-2025',
-    body: 'Ran the loan origination platform. Started with lending to dental and veterinary practices, expanded to all SBA lending for a top-15 US bank. Application intake, underwriting workflow, decisioning, document handling, servicing handoffs, all under regulated audit.',
+    body: 'Ran the in-house loan origination platform and raised the bar on how the team worked. Started with lending to dental and veterinary practices, expanded to all SBA lending for a top-15 US bank. Application intake, underwriting workflow, decisioning, document handling, servicing handoffs, all under regulated audit.',
   },
   {
     org: 'Sonder',
     role: 'Director of Engineering',
     years: '2020-2024',
-    body: 'Joined as a Senior Engineering Manager and grew into Director, taking a small team through hyper-growth into a 25+ organization. Led in-house dynamic pricing, sonder.com, and distribution channel partnerships, owning the systems that transacted over $600M in annual bookings. Company went public in January 2022.',
+    body: 'Joined as a Senior Engineering Manager and grew into Director, growing a small team into a 25+ org inside an 80+ engineering organization. Led distribution channel partnerships, sonder.com, and in-house dynamic pricing - systems that transacted over $600M in annual bookings. Company went public in January 2022.',
   },
   {
     org: 'Liftopia',
     role: 'VP of Product Development',
     years: '2016-2020',
-    body: 'Owned the pricing engine, rate rules, and product catalog behind 200+ ski resort white-label storefronts and our own marketplace. We pioneered dynamic pricing in ski. Every resort priced differently, so the rules lived in configuration and the engine evaluated them. When a resort wanted something the model could not express, we extended the model instead of special-casing the resort.',
+    body: 'Owned product and engineering. We pioneered dynamic pricing in ski and built the pricing engine, price parity systems, RFID integrations, and POS integrations to support 200+ ski resorts on our own marketplace and white-label storefronts.',
   },
   {
     org: 'Couchsurfing',
@@ -40,6 +40,12 @@ const track = [
     role: 'Director of Engineering',
     years: '2009-2011',
     body: 'Built a hotel meta-search platform from scratch. Back-end systems integrating hotel property data and delivering real-time rates and availability through web APIs and embeddable widgets.',
+  },
+  {
+    org: 'Matson Navigation',
+    role: 'Team Lead',
+    years: '',
+    body: 'Automated port operations using RFID tagging on containers, trailers, cranes, and gates, replacing paper tickets and manual gate checks with sensor data. Integrated new systems with legacy mainframes.',
   },
 ];
 
@@ -97,7 +103,7 @@ const projects = [
           <li>
             <div class="head">
               <span class="org">{t.org}</span>
-              <span class="years">{t.years}</span>
+              {t.years && <span class="years">{t.years}</span>}
             </div>
             <div class="role">{t.role}</div>
             <p>{t.body}</p>
