@@ -34,3 +34,27 @@ bun run build:all
 ## Deployment
 
 Push to `main` to deploy all sites via GitHub Actions to Cloudflare Pages.
+
+## Agent skills
+
+This repo vendors a set of agent skills from Matt Pocock's
+["Skills For Real Engineers"](https://github.com/mattpocock/skills). They are
+committed on purpose: real files in `.agents/skills/`, symlinked from
+`.claude/skills/`, with `skills-lock.json` as the manifest.
+
+They are a **snapshot, not a pin**. `skills-lock.json` records a source and a
+content hash but no version or ref, so nothing here tracks upstream
+automatically and nothing tells you when it drifted. Check and refresh them
+periodically:
+
+```bash
+git log -1 --date=short --format='%h %ad' -- .agents/skills/   # when last changed
+npx skills@latest update -p                                    # pull latest
+git diff                                                       # review before committing
+```
+
+Run these from the repo root - the tool resolves paths against the current
+working directory and never walks up to the git root. Review the diff rather
+than committing blind; these skills change how the agent works, sometimes
+substantially. See `docs/agents/skills.md` for the full set and the install
+flags.
