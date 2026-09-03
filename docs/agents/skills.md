@@ -1,9 +1,8 @@
 # Skills
 
-This repo ships with agent skills from
-[`jimnist/skills`](https://github.com/jimnist/skills) (a fork of Matt Pocock's
-["Skills For Real Engineers"](https://github.com/mattpocock/skills)), installed
-via the `skills.sh` tool (`npx skills@latest add jimnist/skills`).
+This repo ships with agent skills from Matt Pocock's
+["Skills For Real Engineers"](https://github.com/mattpocock/skills), installed
+via the `skills.sh` tool at **project level** - not globally.
 
 ## Layout
 
@@ -47,10 +46,27 @@ implement                   (build ticket by ticket)
 
 ## Adding / updating skills
 
+Run these from the repo root - the directory that owns `skills-lock.json`. The
+tool resolves everything relative to the current working directory and never
+walks up to the git root.
+
 ```bash
-npx skills@latest add jimnist/skills      # pick skills + target agents
-npx skills@latest update                   # pull latest versions
+# add a skill: project-level (no -g), Claude Code only, named skills, no prompts
+npx skills@latest add mattpocock/skills -a claude-code -s <name> -y
+
+# see what the repo offers without installing
+npx skills@latest add mattpocock/skills -l
+
+# pull latest versions of what is already installed here
+npx skills@latest update -p
+
+# restore everything from skills-lock.json (fresh clone)
+npx skills experimental_install
 ```
 
-Browse the catalog in the [`jimnist/skills`](https://github.com/jimnist/skills)
-README.
+Never pass `-g/--global` - that installs into `~/.claude/skills`, where the
+skills load their descriptions into every session of every repo. Never pass
+`--help` after `add`; it is ignored and the full install runs anyway.
+
+Browse the catalog in the
+[`mattpocock/skills`](https://github.com/mattpocock/skills) README.
