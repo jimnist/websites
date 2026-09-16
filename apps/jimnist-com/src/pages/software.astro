@@ -34,6 +34,8 @@ const track = [
     role: 'VP of Engineering',
     years: '2013-2016',
     body: 'Brought in to rescue a platform that had failed three rebuild attempts: 46 databases, 1,000+ tables, 1.8M lines of legacy code, two hours of unplanned downtime every other day. Delivered the rebuild in seven months and had one unplanned incident in the first thirteen months after launch. Monthly AWS spend went from $160K to $24K while serving 11M+ members.',
+    href: '/re-engineering_couchsurfing.pdf',
+    hrefText: 'Slides from the talk I gave about this rebuild',
   },
   {
     org: 'hotelicopter',
@@ -106,6 +108,11 @@ const projects = [
             </div>
             <div class="role">{t.role}</div>
             <p>{t.body}</p>
+            {t.href && (
+              <p class="talk">
+                <a href={t.href}>{t.hrefText}</a>
+              </p>
+            )}
           </li>
         ))}
       </ol>
@@ -276,6 +283,21 @@ const projects = [
   .track p,
   .projects p {
     margin-top: 0.7rem;
+  }
+
+  .talk {
+    font-size: 0.95rem;
+    color: #8a7f6a;
+  }
+
+  .talk a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 2px solid #ffd84d;
+  }
+
+  .talk a:hover {
+    background-color: #ffd84d;
   }
 
   .name a {
