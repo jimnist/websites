@@ -26,3 +26,6 @@ Thumbs.db
 
 # Generated assets
 apps/loco8/public/bg/
+
+# Local-only pages built from personal data; never commit or deploy
+apps/jimnist-com/public/ath/
