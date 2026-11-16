@@ -60,9 +60,11 @@ const projects = [
   },
   {
     name: 'ath',
-    href: null,
-    tag: 'Rust · private',
-    body: "Turns Athletic.net meet entries into seeded event sheets. Scrapes entrant lists, resolves each athlete's season-best mark through the bio API, and writes one ranked seed list per event. Happy to walk through it.",
+    href: 'https://github.com/jimnist/ath',
+    tag: 'Rust · public',
+    body: 'Reads Athletic.net track and field data and builds rankings maps and meet seed sheets for high school coaches and families.',
+    extraHref: 'https://jimnist.github.io/ath/',
+    extraText: 'Live examples',
   },
   {
     name: 'Personal AI tooling',
@@ -138,6 +140,11 @@ const projects = [
               <span class="tag">{p.tag}</span>
             </div>
             <p>{p.body}</p>
+            {p.extraHref && (
+              <p class="talk">
+                <a href={p.extraHref}>{p.extraText}</a>
+              </p>
+            )}
           </li>
         ))}
       </ul>
